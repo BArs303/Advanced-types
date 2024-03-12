@@ -15,14 +15,22 @@
 #define CAST(type, value) ((type)value)
 #endif
 
+/*Library headers*/
 #include "dlinked_list.h"
 #include "dynamic_array.h"
 #include "set.h"
+#include "mystring.h"
 
-#define TYPE_STRING 1
-#define TYPE_INT 2
-#define TYPE_FLOAT 3
-#define TYPE_STRUCT 4
-#define TYPE_LIST 5
+enum te
+{
+	type_Int,
+	type_String,
+	type_Darray,
+	type_List,
+	type_Object,
+	type_Error
+};
+
+typedef enum te Types;
 
 #endif

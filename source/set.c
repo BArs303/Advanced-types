@@ -39,8 +39,7 @@ bool s_set_insert(Set *a, void *element, int (*f)(void *arg1, void *arg2))
 	if(check_existence(a, element))
 	{
 		for(i = 0; i < a->size && f(element, darray_at_pos(a, i)) > 0 ; i++)
-		{
-		}
+		{}
 		if(i == a->size)
 			return darray_append(a, element);
 		else
@@ -74,6 +73,5 @@ static bool check_existence(Set *a, void *element)
 
 static int sort_criteria(void *arg1, void *arg2)
 {
-	printf("%ld\n", arg1-arg2);
 	return arg1 - arg2;
 }	

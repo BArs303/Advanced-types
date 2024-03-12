@@ -143,7 +143,7 @@ static Node* get_node_at_index(List *a, int index)
 	
 	x = index; //between 0 and index
 	y = abs(index - a->last_index); //between current index and last used index
-	z = a->size - index -1; //between n and index where n = nast index of list
+	z = a->size - index -1; //between n and index where n = last index of list
 
 	ret = choose_shortest_path(a, index, x, y, z);
 
