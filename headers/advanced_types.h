@@ -15,12 +15,6 @@
 #define CAST(type, value) ((type)value)
 #endif
 
-/*Library headers*/
-#include "dlinked_list.h"
-#include "dynamic_array.h"
-#include "set.h"
-#include "mystring.h"
-
 enum te
 {
 	type_Int,
@@ -32,5 +26,12 @@ enum te
 };
 
 typedef enum te Types;
+
+/*Library headers*/
+#include "dlinked_list.h"
+#include "dynamic_array.h"
+#include "set.h"
+#include "mystring.h"
+#include "json.h"
 
 #endif
