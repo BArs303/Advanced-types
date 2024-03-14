@@ -24,5 +24,6 @@ typedef struct json JSON;
 
 JSON* json_parse(char *str);
 JSON* json_parse_file(const char *filename);
+char* json_stringify(JSON *a);
 
 #endif

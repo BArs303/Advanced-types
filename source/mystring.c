@@ -82,7 +82,18 @@ char *int_to_str(int num)
 	for(int i = length; i > 0; i--)
 	{
 		str[i-1] = num % 10 + '0';
+		num /= 10;
 	}
 	str[length] = 0;
 	return str;
+}
+
+
+char* concat(char *dest, const char *src)
+{
+	int length;
+	length = strlen(dest) + strlen(src);
+	dest = realloc(dest, sizeof(char) * (length+1));
+	strcat(dest, src);
+	return dest;
 }

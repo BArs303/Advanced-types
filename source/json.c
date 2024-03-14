@@ -15,6 +15,12 @@ static JSON* parse_object(char **buffer);
 static JSON* parse_list(char **buffer);
 static JSON* parse_int(char **buffer);
 
+static char* stringify_object(JSON *a);
+static char* stringify_list(JSON *a);
+static char* stringify_string(JSON *a);
+static char* stringify_int(JSON *a);
+static char* process_key(JSON *a);
+
 JSON* json_parse_file(const char *fn)
 {
 	char *str;
@@ -144,6 +150,7 @@ static JSON* parse_int(char **buffer)
 
 	a->value.number = str_to_int(number);
 	a->type = type_Int;
+	free(number);
 	return a;
 }
 
@@ -240,4 +247,109 @@ static bool default_whitespaces(char c)
 			return true;
 	}
 	return false;
+}
+
+
+/*Unload JSON data to file*/
+
+char* json_stringify(JSON *a)
+{
+	char *ret = NULL;
+	switch(a->type)
+	{
+		case type_String:
+		ret = stringify_string(a);
+		//printf("String value %s\n", ret);
+		break;
+
+		case type_Int:
+		ret = stringify_int(a);
+		//printf("Int value %s\n", ret);
+		break;
+
+		case type_Object:
+		ret = stringify_object(a);
+		//printf("Object value %s\n", ret);
+		break;
+
+		case type_List:
+		ret = stringify_list(a);
+		//printf("List value %s\n", ret);
+		break;
+
+		default:;
+	}
+	return ret;
+}
+
+static char* stringify_object(JSON *a)
+{
+	char *result;
+	List *tmp = a->value.object;
+	result = process_key(a);
+	result = concat(result, "\n{\n");
+	for(int i = 0; i < tmp->size-1; i++)
+	{
+		result = concat(result, "    ");
+		result = concat(result, json_stringify((JSON*)list_at_pos(tmp, i)));
+		result = concat(result, ",\n");
+	}
+	result = concat(result, "    ");
+	result = concat(result, json_stringify((JSON*)list_at_pos(tmp, tmp->size-1)));
+	result = concat(result, "\n}");
+	return result;
+}
+static char* stringify_list(JSON *a)
+{
+	char *result;
+	List *tmp = a->value.list;
+	result = process_key(a);
+	result = concat(result, "\n[\n");
+	for(int i = 0; i < tmp->size-1; i++)
+	{
+		result = concat(result, "    ");
+		result = concat(result, json_stringify((JSON*)list_at_pos(tmp, i)));
+		result = concat(result, ",\n");
+	}
+	result = concat(result, "    ");
+	result = concat(result, json_stringify((JSON*)list_at_pos(tmp, tmp->size-1)));
+	result = concat(result, "\n]");
+	return result;
+}
+
+static char* stringify_int(JSON *a)
+{
+	char *result;
+	result = process_key(a);
+	result = concat(result, " ");
+	result = concat(result, int_to_str(a->value.number));
+	return result;
+}
+
+static char* stringify_string(JSON *a)
+{
+	char *result;
+	result = process_key(a);
+	result = concat(result, " \"");
+	result = concat(result, a->value.string);
+	result = concat(result,"\"");
+	return result;
+}
+
+static char* process_key(JSON *a)
+{
+	char *result;
+	result = malloc(sizeof(char) * 3);//3 = ""\0 Start of the string
+	if(a->key)
+	{
+		result[0] = '"';
+		result[1] = 0;
+		result = concat(result, a->key);
+		result = concat(result, "\":");
+	}
+	else
+	{
+		result[0] = 0;
+	}
+	return result;
 }

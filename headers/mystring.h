@@ -6,5 +6,5 @@
 char* file_to_str(const char *filename);
 int str_to_int(char *str);
 char* int_to_str(int num);
-
+char* concat(char *dest, const char *src);
 #endif
