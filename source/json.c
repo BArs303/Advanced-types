@@ -15,11 +15,13 @@ static JSON* parse_object(char **buffer);
 static JSON* parse_list(char **buffer);
 static JSON* parse_int(char **buffer);
 
-static char* stringify_object(JSON *a);
-static char* stringify_list(JSON *a);
-static char* stringify_string(JSON *a);
-static char* stringify_int(JSON *a);
-static char* process_key(JSON *a);
+static char* stringify_object(JSON *a, int level);
+static char* stringify_list(JSON *a, int level);
+static char* stringify_string(JSON *a, int level);
+static char* stringify_int(JSON *a, int level);
+static char* process_key(JSON *a, int level);
+static char* l_json_stringify(JSON *a, int level);
+static char* add_tabs(int level);
 
 JSON* json_parse_file(const char *fn)
 {
@@ -251,29 +253,33 @@ static bool default_whitespaces(char c)
 
 
 /*Unload JSON data to file*/
-
 char* json_stringify(JSON *a)
+{
+	return concat(l_json_stringify(a, 0), "\n");
+}
+
+static char* l_json_stringify(JSON *a, int level)
 {
 	char *ret = NULL;
 	switch(a->type)
 	{
 		case type_String:
-		ret = stringify_string(a);
+		ret = stringify_string(a, level);
 		//printf("String value %s\n", ret);
 		break;
 
 		case type_Int:
-		ret = stringify_int(a);
+		ret = stringify_int(a, level);
 		//printf("Int value %s\n", ret);
 		break;
 
 		case type_Object:
-		ret = stringify_object(a);
+		ret = stringify_object(a, level);
 		//printf("Object value %s\n", ret);
 		break;
 
 		case type_List:
-		ret = stringify_list(a);
+		ret = stringify_list(a, level);
 		//printf("List value %s\n", ret);
 		break;
 
@@ -282,64 +288,73 @@ char* json_stringify(JSON *a)
 	return ret;
 }
 
-static char* stringify_object(JSON *a)
+static char* stringify_object(JSON *a, int level)
 {
 	char *result;
 	List *tmp = a->value.object;
-	result = process_key(a);
-	result = concat(result, "\n{\n");
+	result = process_key(a, level);
+	result = concat(result, "\n");
+	result = concat(result, add_tabs(level));
+	result = concat(result, "{\n");
 	for(int i = 0; i < tmp->size-1; i++)
 	{
-		result = concat(result, "    ");
-		result = concat(result, json_stringify((JSON*)list_at_pos(tmp, i)));
+		result = concat(result, add_tabs(level+1));
+		result = concat(result, l_json_stringify((JSON*)list_at_pos(tmp, i), level+1));
 		result = concat(result, ",\n");
 	}
-	result = concat(result, "    ");
-	result = concat(result, json_stringify((JSON*)list_at_pos(tmp, tmp->size-1)));
-	result = concat(result, "\n}");
+	result = concat(result, add_tabs(level+1));
+	result = concat(result, l_json_stringify((JSON*)list_at_pos(tmp, tmp->size-1), level+1));
+	result = concat(result, "\n");
+	result = concat(result, add_tabs(level));
+	result = concat(result, "}");
+
 	return result;
 }
-static char* stringify_list(JSON *a)
+static char* stringify_list(JSON *a, int level)
 {
 	char *result;
 	List *tmp = a->value.list;
-	result = process_key(a);
-	result = concat(result, "\n[\n");
+	result = process_key(a, level);
+	result = concat(result, "\n");
+	result = concat(result, add_tabs(level));
+	result = concat(result, "[\n");
 	for(int i = 0; i < tmp->size-1; i++)
 	{
-		result = concat(result, "    ");
-		result = concat(result, json_stringify((JSON*)list_at_pos(tmp, i)));
+		result = concat(result, add_tabs(level+1));
+		result = concat(result, l_json_stringify((JSON*)list_at_pos(tmp, i), level+1));
 		result = concat(result, ",\n");
 	}
-	result = concat(result, "    ");
-	result = concat(result, json_stringify((JSON*)list_at_pos(tmp, tmp->size-1)));
-	result = concat(result, "\n]");
+	result = concat(result, add_tabs(level+1));
+	result = concat(result, l_json_stringify((JSON*)list_at_pos(tmp, tmp->size-1), level+1));
+	result = concat(result, "\n");
+	result = concat(result, add_tabs(level));
+	result = concat(result, "]");
 	return result;
 }
 
-static char* stringify_int(JSON *a)
+static char* stringify_int(JSON *a, int level)
 {
 	char *result;
-	result = process_key(a);
+	result = process_key(a, level);
 	result = concat(result, " ");
 	result = concat(result, int_to_str(a->value.number));
 	return result;
 }
 
-static char* stringify_string(JSON *a)
+static char* stringify_string(JSON *a, int level)
 {
 	char *result;
-	result = process_key(a);
+	result = process_key(a, level);
 	result = concat(result, " \"");
 	result = concat(result, a->value.string);
 	result = concat(result,"\"");
 	return result;
 }
 
-static char* process_key(JSON *a)
+static char* process_key(JSON *a, int level)
 {
 	char *result;
-	result = malloc(sizeof(char) * 3);//3 = ""\0 Start of the string
+	result = add_tabs(level);
 	if(a->key)
 	{
 		result[0] = '"';
@@ -352,4 +367,17 @@ static char* process_key(JSON *a)
 		result[0] = 0;
 	}
 	return result;
+}
+
+static char* add_tabs(int level)
+{
+	const char *tab = "    ";
+	char *str; 
+	str = malloc(sizeof(char) * 5); //4 = 1 tab + Null terminator
+	*str = 0;
+	for(int i = 0; i < level; i++)
+	{
+		str = concat(str, tab);
+	}
+	return str;
 }

@@ -1,28 +1,40 @@
-CC=clang
-CFLAGS = -std=c99 -I $(HEADERS_DIR)
-SOURCES=source
-HEADERS=headers
-BIN=bin
-TARGET_EXEC=main.elf
+CC = clang
+CFLAGS = -std=c99
 
-ROOT=$(PWD)
-HEADERS_DIR=$(ROOT)/$(HEADERS)/
-BIN_DIR=$(ROOT)/$(BIN)/
+HEADERS_DIRS = headers
+LIB_DIR = lib
+SRC_DIR = source
+OBJ_DIR = bin
 
-export CC CFLAGS HEADERS_DIR BIN_DIR
+TARGET_EXEC = main.elf
 
-$(TARGET_EXEC):
-	make -C $(SOURCES) -f Makefile
-	$(CC) $(BIN)/* $(CFLAGS) -o $@
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
 
-clean:
-	rm -f $(BIN_DIR)*.o $(TARGET_EXEC)
+#SRC_NAMES = $(notdir $(SOURCES))
 
-rebuild: clean $(TARGET_EXEC)
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+H_FLAGS = $(foreach DIR, $(HEADERS_DIRS), -I $(DIR))
 
-mem_check:
-	valgrind --tool=memcheck --leak-check=full --log-file=VL_LOG ./$(TARGET_EXEC)
+#VAR = x.y.z
+#OBJECTS = $(subst .,?, $(VAR)) will output x?y?z
+#$(foreach var, list, text)
+#subst doesn't support '%' in the pattern
+#SSS1 = $(subst %.c,%,x.c.c bar.c)
+#SSS = $(patsubst %.c,%.o, x.c.c bar.c)
+#replace every *.h file to *.o
+#REP = $(VAR:%.h=%.o)
+#@ means don't print the command
+#$@ means a target name
+#$< means first dependency name
+#$^ means a list of all dependency names
 
-archive: $(TARGET_EXEC)
-	rm $(BIN_DIR)main.o
-	ar -rcs libadvanced_types.a $(BIN_DIR)*.o
+$(TARGET_EXEC):$(OBJECTS)
+	$(CC) -o $@ $^
+
+test:
+	@echo $(SOURCES)
+	@echo $(OBJECTS)
+	@echo $(H_FLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(H_FLAGS) -c -o $@ $<
