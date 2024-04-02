@@ -38,3 +38,7 @@ test:
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(H_FLAGS) -c -o $@ $<
+
+archive:$(TARGET_EXEC)
+	rm $(OBJ_DIR)/main.o
+	ar -rcs libadvanced_types.a $(OBJ_DIR)/*
