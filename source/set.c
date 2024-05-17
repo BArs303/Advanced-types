@@ -30,20 +30,30 @@ void set_clear(Set *a, void (*free_element)(void* element))
 
 bool set_insert(Set *a, void *element)
 {
-	return s_set_insert(a, element, &sort_criteria);
+	return s_set_insert(a, element, &check_existence, &sort_criteria);
 }
 
-bool s_set_insert(Set *a, void *element, int (*f)(void *arg1, void *arg2))
+bool set_insert_check(Set *a, void *element, bool (*f)(Set *s, void* element))
+{
+    return s_set_insert(a, element, f, &sort_criteria);
+}
+
+bool set_insert_sort(Set *a, void *element, int (*f)(void *arg1, void *arg2))
+{
+    return s_set_insert(a, element, &check_existence, f);
+}
+
+bool s_set_insert(Set *a, void *element, bool (*check)(Set *s, void* element), int (*ssort)(void *arg1, void *arg2))
 {
 	int i;
-	if(check_existence(a, element))
+	if(check(a, element))
 	{
-		for(i = 0; i < a->size && f(element, darray_at_pos(a, i)) > 0 ; i++)
+		for(i = 0; i < a->size && ssort(element, darray_at_pos(a, i)) > 0 ; i++)
 		{}
 		if(i == a->size)
 			return darray_append(a, element);
 		else
-			return darray_insert(a, element, i);		
+			return darray_insert(a, element, i);
 	}
 	return false;
 
@@ -58,20 +68,55 @@ void* set_at_pos(Set *a, int index)
 {
 	return darray_at_pos(a, index);
 }
+void* set_binary_search(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
+{
+    return set_at_pos(a, set_search_index(a, element, ssort));
+}
+
+int set_search_index(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
+{
+	void *mitem;
+	int start, end, middle;
+
+	start = 0;
+	end = a->size-1;
+	while(start <= end)
+	{
+		middle = (start+end)/2;
+		mitem = set_at_pos(a, middle);
+		if(ssort(mitem, element) == 0)
+		{
+			return middle;
+		}
+		else if(ssort(mitem, element) < 0)
+		{
+			start = middle + 1;
+		}
+		else
+		{
+			end = middle - 1;
+		}
+	}
+	return -1;
+}
 
 static bool check_existence(Set *a, void *element)
 {
-	for(int i = 0; i < a->size; i++)
+	/*for(int i = 0; i < a->size; i++)
 	{
 		if(darray_at_pos(a, i) == element)
 		{
 			return false;
 		}
 	}
-	return true;
+	return true;*/
+	return !set_binary_search(a, element, &sort_criteria);
 }
 
 static int sort_criteria(void *arg1, void *arg2)
 {
-	return arg1 - arg2;
-}	
+	return 1;
+}
+
+
+
