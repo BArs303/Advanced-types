@@ -1,7 +1,8 @@
 #include "set.h"
 
-static bool check_existence(Set *a, void *element);
 static int sort_criteria(void *arg1, void *arg2);
+static int set_search(Set *a, void *element, bool *flag, int (*ssort)(void *arg1, void *arg2));
+static int set_search_place(Set *a, void *element, bool *flag, int (*ssort)(void *arg1, void *arg2));
 
 Set *init_set()
 {
@@ -33,17 +34,18 @@ bool set_insert(Set *a, void *element)
 	return s_set_insert(a, element, &sort_criteria);
 }
 
-bool s_set_insert(Set *a, void *element, int (*f)(void *arg1, void *arg2))
+bool s_set_insert(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
 {
-	int i;
-	if(check_existence(a, element))
+	int index;
+	bool flag;
+	index = set_search_place(a, element, &flag, ssort);
+	if(index >= 0 && index < a->size && !flag)
 	{
-		for(i = 0; i < a->size && f(element, darray_at_pos(a, i)) > 0 ; i++)
-		{}
-		if(i == a->size)
-			return darray_append(a, element);
-		else
-			return darray_insert(a, element, i);		
+		return darray_insert(a, element, index);
+	}
+	else if(!flag)
+	{
+		return darray_append(a, element);
 	}
 	return false;
 
@@ -59,19 +61,76 @@ void* set_at_pos(Set *a, int index)
 	return darray_at_pos(a, index);
 }
 
-static bool check_existence(Set *a, void *element)
+void* set_binary_search(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
 {
-	for(int i = 0; i < a->size; i++)
+	int index;
+	bool flag;
+	index = set_search(a, element, &flag, ssort);
+	if(flag)
 	{
-		if(darray_at_pos(a, i) == element)
+		return set_at_pos(a, index);
+	}
+	return NULL;
+}
+
+static int set_search(Set *a, void *element, bool *flag, int (*ssort)(void *arg1, void *arg2))
+{
+	void *mitem;
+	int start, end, middle;
+
+	start = 0;
+	*flag = false;
+	end = a->size-1;
+	while(start<=end)
+	{
+		middle = (start+end)/2;
+		mitem = set_at_pos(a, middle);
+		if(ssort(mitem, element) == 0)
 		{
-			return false;
+			*flag = true;
+			return middle;
+		}
+		else if(ssort(mitem, element) < 0)
+		{
+			start = middle + 1;
+		}
+		else
+		{
+			end = middle - 1;
 		}
 	}
-	return true;
+	return end+1;
+
+}
+
+bool check_existence(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
+{
+	bool flag;
+	set_search(a, element, &flag, ssort);
+	return flag;
+}
+
+int set_search_index(Set *a, void *element, int (*ssort)(void *arg1, void *arg2))
+{
+	int index;
+	bool flag;
+	index = set_search(a, element, &flag, ssort);
+	if(flag)
+	{
+		return index;
+	}
+	return -1;
+}
+
+
+static int set_search_place(Set *a, void *element, bool *flag, int (*ssort)(void *arg1, void *arg2))
+{
+	int index;
+	index = set_search(a, element, flag, ssort);
+	return index;
 }
 
 static int sort_criteria(void *arg1, void *arg2)
 {
-	return arg1 - arg2;
+	return 1;
 }	
