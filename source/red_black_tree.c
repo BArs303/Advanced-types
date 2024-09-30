@@ -40,25 +40,56 @@ struct tree_node* tree_insert(
 	int (*compare)(void *arg1, void *arg2)
 )
 {
-	struct tree_node *a;
-	a = find_node(root, element, compare);
-	if(a)
+	struct tree_node *p, *c;
+	p = find_node(root, element, compare);
+	if(p)
 	{
-		if(compare(a->data, element) > 0)
+		c = create_node(element);
+		c->parent = p;
+		if(compare(p->data, element) > 0)
 		{
-			a->child[LEFT] = create_node(element);
+			p->child[LEFT] = c;
 		}
 		else
 		{
-			a->child[RIGHT] = create_node(element);
+			p->child[RIGHT] = c;
 		}
-		return root;
 	}
 	else
 	{
 		root = create_node(element);
+		root->color = BLACK;
 	}
 	//balance tree
 	return root;
+}
+
+struct tree_node* rotate_node(
+	struct red_black_tree *t,
+	struct tree_node *p,
+	int dir
+)
+{
+	struct tree_node *g, *c, *m, *root; //grandparent, child and middle
+	
+	g = p->parent;
+	root = g->parent;
+	m = p->child[dir];
+
+	//middle element rotation
+	g->child[1-dir] = m;
+	if(m)
+		m->parent = g;
+	//two main elements
+	p->child[dir] = g;
+	g->parent = p;
+
+	p->parent = root;
+	if(root)
+		root->child[g == root->child[RIGHT]?RIGHT:LEFT] = p;
+	else
+		t->root = p;
+
+	return p;
 }
 

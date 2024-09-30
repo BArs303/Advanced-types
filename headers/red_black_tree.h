@@ -36,6 +36,12 @@ struct tree_node* tree_insert(
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
+
+struct tree_node* rotate_node(
+	struct red_black_tree *t,
+	struct tree_node *p,
+	int dir
+);
 struct tree_node* create_node(void *data);
 
 #endif
