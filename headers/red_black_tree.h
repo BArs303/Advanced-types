@@ -32,7 +32,7 @@ struct tree_node* find_node(
 );
 
 struct tree_node* tree_insert(
-	struct tree_node *root,
+	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
