@@ -42,6 +42,6 @@ struct tree_node* rotate_node(
 	struct tree_node *p,
 	int dir
 );
-struct tree_node* create_node(void *data);
+//struct tree_node* create_node(void *data);
 
 #endif

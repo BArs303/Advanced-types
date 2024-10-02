@@ -34,5 +34,6 @@ typedef enum te Types;
 #include "mystring.h"
 #include "json.h"
 #include "red_black_tree.h"
+#include "hmap.h"
 
 #endif

@@ -10,5 +10,6 @@ struct hash_map
 	int hash;
 	int value;
 };
+int function_hmap(const char *text);
 
 #endif
