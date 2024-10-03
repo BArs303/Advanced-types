@@ -1,31 +1,33 @@
 #include "red_black_tree.h"
 
+static RB_Node* rbt_max(RB_Node *root);
+
 static void balance_tree
 (
 	struct red_black_tree *a,
-	struct tree_node *new_node,
+	RB_Node *new_node,
 	int dir
 );
 
-struct tree_node* create_node(void *data)
+RB_Node* create_node(void *data)
 {
-	struct tree_node *a;
-	a = malloc(sizeof(struct tree_node));
+	RB_Node *a;
+	a = malloc(sizeof(RB_Node));
 	a->data = data;
 	a->parent = NULL;
 	a->color = RED;
-	a->child[LEFT] = NULL;
-	a->child[RIGHT] = NULL;
+	a->child[LEFT]= NULL;
+	a->child[RIGHT]= NULL;
 	return a;
 }
-struct tree_node* find_node
+RB_Node* find_node
 (
-	struct tree_node *root, 
+	RB_Node *root, 
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 )
 {
-	struct tree_node *parent;
+	RB_Node *parent;
 	if(!root)
 		return root;
 
@@ -42,14 +44,14 @@ struct tree_node* find_node
 	return parent;
 }
 
-struct tree_node* tree_insert
+RB_Node* tree_insert
 (
 	struct red_black_tree *a, 
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 )
 {
-	struct tree_node *p, *c;
+	RB_Node *p, *c;
 	int dir;
 	dir = LEFT;
 	p = find_node(a->root, element, compare);
@@ -64,14 +66,14 @@ struct tree_node* tree_insert
 	return c;
 }
 
-struct tree_node* rotate_node
+RB_Node* rotate_node
 (
 	struct red_black_tree *a,
-	struct tree_node *p,
+	RB_Node *p,
 	int dir
 )
 {
-	struct tree_node *g, *c, *m, *root; //grandparent, child and middle
+	RB_Node *g, *c, *m, *root; //grandparent, child and middle
 	
 	g = p->parent;
 	root = g->parent;
@@ -87,7 +89,7 @@ struct tree_node* rotate_node
 
 	p->parent = root;
 	if(root)
-		root->child[g == root->child[RIGHT]?RIGHT:LEFT] = p;
+		root->child[root->child[RIGHT] == g ? RIGHT:LEFT] = p;
 	else
 		a->root = p;
 	return p;
@@ -96,12 +98,12 @@ struct tree_node* rotate_node
 static void  balance_tree
 (
 	struct red_black_tree *a,
-	struct tree_node *new_node,
+	RB_Node *new_node,
 	int dir
 )
 {
 	//parent grandparent and uncle of new node
-	struct tree_node *p, *g, *u; 	
+	RB_Node *p, *g, *u; 	
 	p = new_node->parent;
 	//tree is empty
 	if(!p)
@@ -122,13 +124,14 @@ static void  balance_tree
 			return;
 		if(!(g = p->parent))
 		{
-			//situation when p->parent is null and p is red may occur after deletion
+			//situation when p->parent is null and p is red may occur after rotation
+			//sometimes root may be red
 			p->color = BLACK;
 			return;
 		}
 			
 		//parent is red. Define parent direction
-		dir = g->child[RIGHT] == p?RIGHT:LEFT;
+		dir = NODE_DIRECTION(p);
 		u = g->child[1-dir];
 		//case 2: uncle is black
 		if(u == NULL || u->color == BLACK)
@@ -165,4 +168,83 @@ case_2:
 	p->color = BLACK;
 	g->color = RED;
 	return;
+}
+
+static RB_Node* rbt_max(RB_Node *root)
+{
+	if(root)
+	{
+		while(root->child[RIGHT])
+		{
+			root = root->child[RIGHT];
+		}
+	}
+	return root;
+}
+
+void bst_delete
+(
+	struct red_black_tree *a,
+	RB_Node *n,
+	void (*free_element)(void *element)
+)
+{
+	RB_Node *p;
+	RB_Node *t;
+	int dir;
+
+	p = n->parent;
+	printf("start deletion\n");
+	if(!p) //n is root
+	{
+		a->root = p;
+		return;
+	}
+	dir = NODE_DIRECTION(n);
+
+	if(n->child[LEFT] == NULL && n->child[RIGHT] == NULL)
+	{
+		p->child[dir] = NULL;
+	}
+	else if(n->child[LEFT] == NULL)
+	{
+		printf("delete left\n");
+		p->child[dir] = n->child[RIGHT];
+		n->child[RIGHT]->parent = p;
+	}
+	else if(n->child[RIGHT] == NULL)
+	{
+		printf("delete right\n");
+		p->child[dir] = n->child[LEFT];
+		n->child[LEFT]->parent = p;
+	}
+	else
+	{
+		//if node has 2 childs
+		t = rbt_max(n->child[LEFT]);
+		ptr_swap(&(n->data), &(t->data));
+		bst_delete(a, t, free_element);
+		return;
+	}
+	free_element(n->data);
+	free(n);
+	return;
+}
+
+void print_tree(RB_Node *a)
+{
+	if(a)
+	{
+		printf("value %d\ncolor: ", *CAST(int*, a->data));
+		if(a->color == RED)
+			printf("Red\n");
+		else
+			printf("Black\n");
+		printf("address %p\nparent %p\nleft child\n", a, a->parent);
+		print_tree(a->child[LEFT]);
+		printf("right child\n");
+		print_tree(a->child[RIGHT]);
+	}
+	else
+		printf("nil\n");
 }
