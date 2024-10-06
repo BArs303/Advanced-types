@@ -9,6 +9,7 @@
 #define NODE_DIRECTION(n) ((n->parent)->child[RIGHT] == n ? RIGHT:LEFT)
 
 typedef struct red_black_node RB_Node;
+typedef struct red_black_tree RBT;
 
 enum node_color
 {
@@ -47,7 +48,7 @@ RB_Node* rotate_node(
 	int dir
 );
 
-void bst_delete
+void BST_Delete
 (
 	struct red_black_tree *root,
 	RB_Node *element,

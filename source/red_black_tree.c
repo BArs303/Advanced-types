@@ -1,15 +1,16 @@
 #include "red_black_tree.h"
 
 static RB_Node* rbt_max(RB_Node *root);
+static void swap_node_colors(RB_Node *a, RB_Node *b);
 
-static void balance_tree
+static void balance_red_black_tree
 (
 	struct red_black_tree *a,
 	RB_Node *new_node,
 	int dir
 );
 
-RB_Node* create_node(void *data)
+RB_Node* create_red_black_node(void *data)
 {
 	RB_Node *a;
 	a = malloc(sizeof(RB_Node));
@@ -55,13 +56,13 @@ RB_Node* tree_insert
 	int dir;
 	dir = LEFT;
 	p = find_node(a->root, element, compare);
-	c = create_node(element);
+	c = create_red_black_node(element);
 	c->parent = p;
 	if(p && compare(p->data, element) < 0)
 	{
 		dir = RIGHT;
 	}
-	balance_tree(a, c, dir);
+	balance_red_black_tree(a, c, dir);
 	a->root->color = BLACK;
 	return c;
 }
@@ -79,14 +80,17 @@ RB_Node* rotate_node
 	root = g->parent;
 	m = p->child[dir];
 
-	//middle element rotation
+	//middle element just change its parent
 	g->child[1-dir] = m;
 	if(m)
 		m->parent = g;
-	//two main elements
+	/*two main elements
+		p becomes parent for g
+	*/
 	p->child[dir] = g;
 	g->parent = p;
 
+	//root of the subtree
 	p->parent = root;
 	if(root)
 		root->child[root->child[RIGHT] == g ? RIGHT:LEFT] = p;
@@ -95,7 +99,7 @@ RB_Node* rotate_node
 	return p;
 }
 
-static void  balance_tree
+static void  balance_red_black_tree
 (
 	struct red_black_tree *a,
 	RB_Node *new_node,
@@ -125,7 +129,7 @@ static void  balance_tree
 		if(!(g = p->parent))
 		{
 			//situation when p->parent is null and p is red may occur after rotation
-			//sometimes root may be red
+			//sometimes root may be red. need to figure out
 			p->color = BLACK;
 			return;
 		}
@@ -182,7 +186,7 @@ static RB_Node* rbt_max(RB_Node *root)
 	return root;
 }
 
-void bst_delete
+void BST_Delete
 (
 	struct red_black_tree *a,
 	RB_Node *n,
@@ -194,7 +198,6 @@ void bst_delete
 	int dir;
 
 	p = n->parent;
-	printf("start deletion\n");
 	if(!p) //n is root
 	{
 		a->root = p;
@@ -202,29 +205,28 @@ void bst_delete
 	}
 	dir = NODE_DIRECTION(n);
 
-	if(n->child[LEFT] == NULL && n->child[RIGHT] == NULL)
+	//if node has 2 childs
+	if(n->child[LEFT] && n->child[RIGHT])
+	{
+		t = rbt_max(n->child[LEFT]);
+		ptr_swap(&(n->data), &(t->data));
+		BST_Delete(a, t, free_element);
+		return;
+	}
+	else if(n->child[LEFT] == NULL && n->child[RIGHT] == NULL)
 	{
 		p->child[dir] = NULL;
 	}
 	else if(n->child[LEFT] == NULL)
 	{
-		printf("delete left\n");
 		p->child[dir] = n->child[RIGHT];
 		n->child[RIGHT]->parent = p;
 	}
-	else if(n->child[RIGHT] == NULL)
-	{
-		printf("delete right\n");
-		p->child[dir] = n->child[LEFT];
-		n->child[LEFT]->parent = p;
-	}
 	else
 	{
-		//if node has 2 childs
-		t = rbt_max(n->child[LEFT]);
-		ptr_swap(&(n->data), &(t->data));
-		bst_delete(a, t, free_element);
-		return;
+		printf("node has left child\n");
+		p->child[dir] = n->child[LEFT];
+		n->child[LEFT]->parent = p;
 	}
 	free_element(n->data);
 	free(n);
@@ -247,4 +249,149 @@ void print_tree(RB_Node *a)
 	}
 	else
 		printf("nil\n");
+}
+
+static void swap_node_colors(RB_Node *a, RB_Node *b)
+{
+	enum node_color t;
+	t = a->color;
+	a->color = b->color;
+	b->color = t;
+	return;
+}
+void fixup
+(
+	RBT *a,
+	RB_Node *x,
+	void (*free_element)(void *element)
+)
+{
+	RB_Node *p, *c, *s, *d;
+	int dir;
+	//x - black node with no childs
+
+	dir = NODE_DIRECTION(x);
+	p = x->parent;
+
+	if(!p)//x is root
+	{
+		a->root = p;
+		return;
+	}
+	p->child[dir] = NULL;
+
+	goto cycle_start;
+do
+{
+	//skip for first iteration
+	dir = NODE_DIRECTION(x);
+	p = x->parent;
+cycle_start:
+	s = p->child[1-dir]; //sibling
+	d = s->child[1-dir]; //distand nephew
+	
+	if(s->color == RED)
+		break;
+	//here s color is black
+
+repeat:
+	//if distant nephew is red
+	if(d && d->color == RED)
+		goto case_32;
+
+	//if close nephew is red
+	c = s->child[dir]; //close nephew
+	if(c && d->color == RED)
+		goto case_31;
+	//two nephews are black
+	if(p->color == RED)
+		goto case_2;
+	//p, s, c, d are black
+	s->color = RED;
+}while((x = p));
+return;
+
+//case 2 sibling is red -> p is black
+case_1:
+	rotate_node(a, s, dir);
+	swap_node_colors(p, s);
+	//changes after rotation
+	s = c;
+	d = s->child[1-dir];
+	goto repeat;
+
+//at least one of the nephews is red
+//case 1.3 two nephews and s are black and the parent is red
+case_2:
+	swap_colors(p, s);
+	return;
+
+//case 1.2 c - red, s - black
+case_31:
+	swap_node_colors(s, c);
+	rotate_node(a, c, 1-dir);//rotate c and s
+	//changes after rotation
+	d = s;
+	s = c;
+
+//case 1.1 d - red, s - black
+case_32:
+	swap_node_colors(s, p);
+	d->color = BLACK;
+	rotate_node(a, s, dir);//rotate sibling and parent
+	return
+
+}
+
+void RBT_delete
+(
+	RBT *a,
+	RB_Node *x,
+	void (*free_element)(void *element)
+)
+{
+	RB_Node *p, *w, *c;
+	enum node_color original_color;
+	char dir
+
+	if(x->child[LEFT] && x->child[RIGHT])
+	{
+		//if node has two childs replace it with
+		//maximum of left subtree
+		//or
+		//minimum of right subtree
+		//prefer red node
+		//it will always have maximum 1 child
+		w = rbt_max(x->child[LEFT]);
+		ptr_swap(&(x->data), &(w->data));
+		tdel(a, w, free_element);
+		return;
+	}
+	else if(x->child[LEFT])
+	{
+		c = x->child[LEFT];
+	}
+	else if(x->child[RIGHT])
+	{
+		c = x->child[RIGHT];
+	}
+	else
+	{
+		dir = NODE_DIRECTION(x);
+		original_color = x->color;
+		//delete red node and fix up black node
+		if(original_color == RED)
+		{
+			p = x->parent;
+			p->child[dir] = NULL;
+		}
+		else
+			fixup(a, x);
+		free_element(x->data);
+		free(x);
+		return;
+	}
+	ptr_swap(&(x->data), &(c->data));
+	tdel(a, c, free_element);
+	return;
 }
