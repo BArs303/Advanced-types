@@ -36,7 +36,7 @@ RB_Node* find_node(
 	int (*compare)(void *arg1, void *arg2)
 );
 
-RB_Node* tree_insert(
+RB_Node* RBT_Insert(
 	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
@@ -48,7 +48,7 @@ RB_Node* rotate_node(
 	int dir
 );
 
-void BST_Delete
+void RBT_Delete
 (
 	struct red_black_tree *root,
 	RB_Node *element,
