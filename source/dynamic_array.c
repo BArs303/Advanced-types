@@ -2,6 +2,7 @@
 
 static void shift_right(Darray *a, int index);
 static void shift_left(Darray *a, int index);
+static bool check_darray_index(Darray *a, int index);
 
 Darray *init_darray_with_length(int size)
 {
@@ -24,11 +25,17 @@ Darray* init_darray()
 
 void* darray_at_pos(Darray *a, int index)
 {
-	if(index >= 0 && index < a->size)
+	if(check_darray_index(a, index))
 	{
 		return a->array[index];
 	}
 	return NULL;
+}
+static bool check_darray_index(Darray *a, int index)
+{
+	if(index >= 0 && index < a->capacity)
+		return true;
+	return false;
 }
 
 void destruct_darray(Darray *a, void (*free_element)(void *element))
@@ -61,7 +68,7 @@ bool darray_append(Darray *a, void *element)
 
 bool darray_insert(Darray *a, void *element, int index)
 {
-	if(index >= 0 && index < a->size)
+	if(check_darray_index(a, index))
 	{
 		shift_right(a, index);
 		a->array[index] = element;
@@ -74,7 +81,7 @@ bool darray_insert(Darray *a, void *element, int index)
 
 bool darray_remove(Darray *a, int index, void (*free_element)(void *element))
 {
-	if(index >= 0 && index < a->size)
+	if(check_darray_index(a, index))
 	{
 		free_element(a->array[index]);
 		shift_left(a, index);
@@ -89,7 +96,8 @@ void print_darray(Darray *a, void(*print_element)(void *element))
 {
 	for(int i = 0; i < a->size; i++)
 	{
-		print_element(a->array[i]);
+		if(a->array[i]) //if element exists
+			print_element(a->array[i]);
 	}
 }
 
@@ -120,7 +128,7 @@ static void shift_left(Darray *a, int index)
 
 bool darray_replace(Darray *a, int index, void *new_element, void(*free_element)(void *element))
 {
-	if(index >= 0 && index < a->size)
+	if(check_darray_index(a, index))
 	{
 		free_element(a->array[index]);
 		a->array[index] = new_element;

@@ -30,25 +30,25 @@ struct red_black_tree
 	RB_Node *root;
 };
 
-RB_Node* find_node(
+//Functions
+RB_Node* rbt_find_node(
 	RB_Node *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
-
-RB_Node* RBT_Insert(
+RB_Node* rbt_insert(
 	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
 
-RB_Node* rotate_node(
-	struct red_black_tree *t,
-	RB_Node *p,
-	int dir
+RB_Node* s_rbt_insert(
+	struct red_black_tree *root,
+	void *element,
+	int (*compare)(void *arg1, void *arg2),
+	bool flag
 );
-
-void RBT_Delete
+void rbt_delete
 (
 	struct red_black_tree *root,
 	RB_Node *element,

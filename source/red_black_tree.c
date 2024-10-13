@@ -2,6 +2,12 @@
 
 static RB_Node* rbt_max(RB_Node *root);
 static void swap_node_colors(RB_Node *a, RB_Node *b);
+static RB_Node* rotate_node
+(
+	struct red_black_tree *a,
+	RB_Node *p,
+	int dir
+);
 
 static void balance_red_black_tree
 (
@@ -10,6 +16,11 @@ static void balance_red_black_tree
 	int dir
 );
 
+static void fixup
+(
+	RBT *a,
+	RB_Node *x
+);
 RB_Node* create_red_black_node(void *data)
 {
 	RB_Node *a;
@@ -21,7 +32,8 @@ RB_Node* create_red_black_node(void *data)
 	a->child[RIGHT]= NULL;
 	return a;
 }
-RB_Node* find_node
+
+RB_Node* rbt_find_node
 (
 	RB_Node *root, 
 	void *element,
@@ -45,29 +57,44 @@ RB_Node* find_node
 	return parent;
 }
 
-RB_Node* RBT_Insert
+RB_Node* rbt_insert
 (
 	struct red_black_tree *a, 
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 )
 {
+	return s_rbt_insert(a, element, compare, false);
+}
+
+RB_Node* s_rbt_insert
+(
+	struct red_black_tree *a, 
+	void *element,
+	int (*compare)(void *arg1, void *arg2),
+	bool flag
+)
+{
 	RB_Node *p, *c;
-	int dir;
+	int dir, s;
 	dir = LEFT;
-	p = find_node(a->root, element, compare);
+	p = rbt_find_node(a->root, element, compare);
+	if(p)
+	{
+		s = compare(p->data, element);
+		if(flag && s == 0)//element already exists
+			return NULL;
+		if(s < 0)
+			dir = RIGHT;
+	}
 	c = create_red_black_node(element);
 	c->parent = p;
-	if(p && compare(p->data, element) < 0)
-	{
-		dir = RIGHT;
-	}
 	balance_red_black_tree(a, c, dir);
-	a->root->color = BLACK;
+	//a->root->color = BLACK;
 	return c;
 }
 
-RB_Node* rotate_node
+static RB_Node* rotate_node
 (
 	struct red_black_tree *a,
 	RB_Node *p,
@@ -307,7 +334,7 @@ case_32:
 
 }
 
-void RBT_Delete
+void rbt_delete
 (
 	RBT *a,
 	RB_Node *x,
@@ -328,7 +355,7 @@ void RBT_Delete
 		//it will always have maximum 1 child
 		w = rbt_max(x->child[LEFT]);
 		ptr_swap(&(x->data), &(w->data));
-		RBT_Delete(a, w, free_element);
+		rbt_delete(a, w, free_element);
 		return;
 	}
 	else if(x->child[LEFT])
@@ -356,6 +383,6 @@ void RBT_Delete
 		return;
 	}
 	ptr_swap(&(x->data), &(c->data));
-	RBT_Delete(a, c, free_element);
+	rbt_delete(a, c, free_element);
 	return;
 }

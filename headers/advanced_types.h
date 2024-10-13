@@ -30,11 +30,12 @@ typedef enum te Types;
 /*Library headers*/
 #include "dlinked_list.h"
 #include "dynamic_array.h"
-#include "set.h"
+#include "rbt_set.h"
 #include "mystring.h"
 #include "json.h"
 #include "red_black_tree.h"
 
 void ptr_swap(void **a, void **b);
+//#include "set.h" replaced
 
 #endif
