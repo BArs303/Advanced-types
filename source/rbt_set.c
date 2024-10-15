@@ -32,10 +32,16 @@ bool set_delete
 	}
 	return false;
 }
+void* set_find(Set *a, void *element, int (*compare)(void *a, void *b))
+{
+	RB_Node *t;
+	t = rbt_find_node(a->root, element, compare);
+	return t->data;
+}
 
 void print_set(Set *a, void (*print_element)(void *element))
 {
-
+	print_rbt(a, print_element);
 }
 
 void delete_set(Set *a, void (*free_element)(void *element))

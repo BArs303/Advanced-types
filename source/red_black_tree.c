@@ -21,6 +21,8 @@ static void fixup
 	RBT *a,
 	RB_Node *x
 );
+static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
+
 RB_Node* create_red_black_node(void *data)
 {
 	RB_Node *a;
@@ -213,19 +215,36 @@ static RB_Node* rbt_max(RB_Node *root)
 	return root;
 }
 
-void print_tree(RB_Node *a)
+void print_rbt(RBT *a, void (*print_element)(void *element))
+{
+	inner_print_tree(a->root, print_element);
+}
+static void inner_print_tree(RB_Node *a, void (*print_element)(void *element))
 {
 	if(a)
 	{
-		printf("value %d\ncolor: ", *CAST(int*, a->data));
+		inner_print_tree(a->child[LEFT], print_element);
+		print_element(a->data);
+		inner_print_tree(a->child[RIGHT], print_element);
+	}
+}
+
+
+void debug_print_rbt(RB_Node *a, void (*print_element)(void *element))
+{
+	if(a)
+	{
+		printf("value: ");
+		print_element(a->data);
+		printf("color: ");
 		if(a->color == RED)
 			printf("Red\n");
 		else
 			printf("Black\n");
 		printf("address %p\nparent %p\nleft child\n", a, a->parent);
-		print_tree(a->child[LEFT]);
+		debug_print_rbt(a->child[LEFT], print_element);
 		printf("right child\n");
-		print_tree(a->child[RIGHT]);
+		debug_print_rbt(a->child[RIGHT], print_element);
 	}
 	else
 		printf("nil\n");
@@ -261,11 +280,11 @@ static void fixup
 
 	if(!p)//x is root
 	{
-		printf("LAST ELEMENT\n\n\n");
+		//printf("LAST ELEMENT\n\n\n");
 		a->root = p;
 		return;
 	}
-	printf("skipped in fixup\n");
+	//printf("skipped in fixup\n");
 	dir = NODE_DIRECTION(x);
 	p->child[dir] = NULL;
 

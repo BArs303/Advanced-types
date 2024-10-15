@@ -57,6 +57,6 @@ void rbt_delete
 
 RB_Node* create_node(void *data);
 
-//temporary functions
-void print_tree(RB_Node *a);
+void print_rbt(RBT *a, void (*print_tree)(void *element));
+void debug_print_rbt(RB_Node *a, void (*print_tree)(void *element));
 #endif
