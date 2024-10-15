@@ -1,0 +1,49 @@
+# Project: Bars
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+OBJ      = source/dlinked_list.o source/dynamic_array.o source/hmap.o source/json.o source/mystring.o source/red_black_tree.o source/set.o source/main.o
+LINKOBJ  = source/dlinked_list.o source/dynamic_array.o source/hmap.o source/json.o source/mystring.o source/red_black_tree.o source/set.o source/main.o
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Users/oea83/Documents/GitHub/Advanced-types/headers"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"C:/Users/oea83/Documents/GitHub/Advanced-types/headers"
+BIN      = Bars.exe
+CXXFLAGS = $(CXXINCS) -std=c99
+CFLAGS   = $(INCS) -std=c99
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+source/dlinked_list.o: source/dlinked_list.c
+	$(CC) -c source/dlinked_list.c -o source/dlinked_list.o $(CFLAGS)
+
+source/dynamic_array.o: source/dynamic_array.c
+	$(CC) -c source/dynamic_array.c -o source/dynamic_array.o $(CFLAGS)
+
+source/hmap.o: source/hmap.c
+	$(CC) -c source/hmap.c -o source/hmap.o $(CFLAGS)
+
+source/json.o: source/json.c
+	$(CC) -c source/json.c -o source/json.o $(CFLAGS)
+
+source/mystring.o: source/mystring.c
+	$(CC) -c source/mystring.c -o source/mystring.o $(CFLAGS)
+
+source/red_black_tree.o: source/red_black_tree.c
+	$(CC) -c source/red_black_tree.c -o source/red_black_tree.o $(CFLAGS)
+
+source/set.o: source/set.c
+	$(CC) -c source/set.c -o source/set.o $(CFLAGS)
+
+source/main.o: source/main.c
+	$(CC) -c source/main.c -o source/main.o $(CFLAGS)
