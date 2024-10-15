@@ -5,7 +5,3 @@ recipes.txt
 m1.mk
 old/
 items.json
-Bars.dev
-Bars.layout
-Bars.exe
-source/*.o
