@@ -6,42 +6,57 @@
 #define LEFT 0
 #define RIGHT 1
 
+#define NODE_DIRECTION(n) ((n->parent)->child[RIGHT] == n ? RIGHT:LEFT)
+
+typedef struct red_black_node RB_Node;
+typedef struct red_black_tree RBT;
+
 enum node_color
 {
 	RED,
 	BLACK
 };
 
-struct tree_node
+struct red_black_node 
 {
 	void *data;
-	struct tree_node *child[2];
-	struct tree_node *parent;
+	RB_Node *child[2];
+	RB_Node *parent;
 	enum node_color color;
 };
 
 struct red_black_tree
 {
-	struct tree_node *root;
+	RB_Node *root;
 };
 
-struct tree_node* find_node(
-	struct tree_node *root,
+//Functions
+RB_Node* rbt_find_node(
+	RB_Node *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
-
-struct tree_node* tree_insert(
+RB_Node* rbt_insert(
 	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
 
-struct tree_node* rotate_node(
-	struct red_black_tree *t,
-	struct tree_node *p,
-	int dir
+RB_Node* s_rbt_insert(
+	struct red_black_tree *root,
+	void *element,
+	int (*compare)(void *arg1, void *arg2),
+	bool flag
 );
-//struct tree_node* create_node(void *data);
+void rbt_delete
+(
+	struct red_black_tree *root,
+	RB_Node *element,
+	void (*free_element)(void *element)
+);
 
+RB_Node* create_node(void *data);
+
+void print_rbt(RBT *a, void (*print_tree)(void *element));
+void debug_print_rbt(RB_Node *a, void (*print_tree)(void *element));
 #endif

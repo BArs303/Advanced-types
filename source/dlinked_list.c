@@ -1,6 +1,6 @@
 #include "dlinked_list.h"
 
-static Node* create_node();
+static Node* create_list_node();
 static Node* get_node_at_index(List *a, int index);
 static bool check_index(int index, int elements);
 
@@ -13,8 +13,8 @@ List *init_list()
 	List *new_list;
 	new_list = malloc(sizeof(List));
 
-	new_list->head = create_node();
-	new_list->tail = create_node();
+	new_list->head = create_list_node();
+	new_list->tail = create_list_node();
 
 	new_list->head->next = new_list->tail;
 	new_list->tail->previous = new_list->head;
@@ -25,7 +25,7 @@ List *init_list()
 	return new_list;
 }
 
-static Node *create_node()
+static Node *create_list_node()
 {
 	Node *a;
 	a = malloc(sizeof(Node));
@@ -38,7 +38,7 @@ static Node *create_node()
 void list_append(List *dst, void *element)
 {
 	dst->tail->data = element;
-	dst->tail->next = create_node();
+	dst->tail->next = create_list_node();
 	dst->tail->next->previous = dst->tail;
 	dst->tail = dst->tail->next;
 	dst->size++;
@@ -52,7 +52,7 @@ void list_insert(List *dst, void *element, int index)
 	{
 		a = get_node_at_index(dst, index);
 
-		new_node = create_node();
+		new_node = create_list_node();
 		new_node->next = a;
 		new_node->previous = a->previous;
 		a->previous = new_node;

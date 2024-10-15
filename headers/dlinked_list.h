@@ -38,8 +38,6 @@ void list_insert(List *dst, void *element, int index);
 void list_remove(List *a, int index, void (*free_element)(void *element));
 void* list_at_pos(List *a, int index);
 
-
-
 void print_list(List *a, void (*print_element)(void *element));
 void debug_print(List *a);
 
