@@ -2,7 +2,7 @@
 
 static Node* create_list_node();
 static Node* get_node_at_index(List *a, int index);
-static bool check_index(int index, int elements);
+static bool check_index(List *a, int index);
 
 static Node* forward(Node *initial_node, int begin, int end);
 static Node* backward(Node *initial_node, int begin, int end);
@@ -48,7 +48,7 @@ void list_append(List *dst, void *element)
 void list_insert(List *dst, void *element, int index)
 {
 	Node *a, *new_node;
-	if(check_index(index, dst->size))
+	if(check_index(dst, index))
 	{
 		a = get_node_at_index(dst, index);
 
@@ -93,7 +93,7 @@ void* list_at_pos(List *a, int index)
 {
 	Node *tmp;
 	void *ret = NULL;
-	if(check_index(index, a->size))
+	if(check_index(a, index))
 	{
 		tmp = get_node_at_index(a, index);
 		ret = tmp->data;
@@ -104,7 +104,7 @@ void* list_at_pos(List *a, int index)
 void list_remove(List *a, int index, void (*free_element)(void *element))
 {
 	Node *deleted;
-	if(!check_index(index, a->size))
+	if(!check_index(a, index))
 		return;
 
 	deleted = get_node_at_index(a, index);
@@ -195,9 +195,9 @@ static Node* backward(Node *initial_node, int begin, int end)
 	return initial_node;
 }
 
-static bool check_index(int index, int elements)
+static bool check_index(List *a, int index)
 {
-	if(index < elements && index >= 0)
+	if(index < a->size && index >= 0)
 	{
 		return true;
 	}
