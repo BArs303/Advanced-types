@@ -36,7 +36,7 @@ void* set_find(Set *a, void *element, int (*compare)(void *a, void *b))
 {
 	RB_Node *t;
 	t = rbt_find_node(a->root, element, compare);
-	return t->data;
+	return t ? t->data : t;
 }
 
 void print_set(Set *a, void (*print_element)(void *element))

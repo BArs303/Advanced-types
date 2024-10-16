@@ -12,13 +12,14 @@ void queue_push(Queue *a, void *element)
 void* queue_pop(Queue *a)
 {
 	void *ret = NULL;
-	if(queue_is_empty(a))
+	if(!queue_is_empty(a))
 	{
 		a->head = a->head->next;
 		ret = a->head->data;
 		free(a->head->previous);
 		a->head->data = NULL;
 		a->head->previous = NULL;
+		a->size--;
 	}
 	return ret;
 }
