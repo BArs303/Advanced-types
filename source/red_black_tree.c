@@ -39,7 +39,8 @@ RB_Node* rbt_find_node
 (
 	RB_Node *root, 
 	void *element,
-	int (*compare)(void *arg1, void *arg2)
+	int (*compare)(void *arg1, void *arg2),
+	int *cmp_result
 )
 {
 	RB_Node *parent;
@@ -49,9 +50,10 @@ RB_Node* rbt_find_node
 	while(root)
 	{
 		parent = root;
-		if(compare(root->data, element) == 0)
+		*cmp_result = compare(root->data, element);
+		if(*cmp_result == 0)
 			return root;
-		else if(compare(root->data, element) > 0)
+		if(*cmp_result > 0)
 			root = root->child[LEFT];
 		else
 			root = root->child[RIGHT];
@@ -80,10 +82,10 @@ RB_Node* s_rbt_insert
 	RB_Node *p, *c;
 	int dir, s;
 	dir = LEFT;
-	p = rbt_find_node(a->root, element, compare);
+	p = rbt_find_node(a->root, element, compare, &s);
+	//printf("in insert %d\nfind result %p\n", s, p);
 	if(p)
 	{
-		s = compare(p->data, element);
 		if(flag && s == 0)//element already exists
 			return NULL;
 		if(s < 0)
@@ -287,7 +289,6 @@ static void fixup
 	//printf("skipped in fixup\n");
 	dir = NODE_DIRECTION(x);
 	p->child[dir] = NULL;
-
 	goto cycle_start;
 do
 {

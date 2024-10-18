@@ -34,7 +34,8 @@ struct red_black_tree
 RB_Node* rbt_find_node(
 	RB_Node *root,
 	void *element,
-	int (*compare)(void *arg1, void *arg2)
+	int (*compare)(void *arg1, void *arg2),
+	int *cmp_result
 );
 RB_Node* rbt_insert(
 	struct red_black_tree *root,
