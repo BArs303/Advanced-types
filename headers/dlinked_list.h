@@ -3,42 +3,34 @@
 #ifndef DLINKED_LIST_H
 #define DLINKED_LIST_H
 
-#define DEBUG
-
-#ifdef DEBUG
-#define SHOW_LIST(dlist) debug_print(dlist);
-#else
-#define SHOW
-#endif
-
-typedef struct node Node;
+typedef struct dlist_node list_node;
 typedef struct dlist List;
-struct node
+struct dlist_node
 {
 	void *data;
-	Node *next;
-	Node *previous;
+	list_node *next;
+	list_node *previous;
 };
 
 struct dlist
 {
-	Node *head;
-	Node *tail;
+	list_node *head;
+	list_node *tail;
 	int size;
 
-	Node *last_used;
+	list_node *last_used;
 	int last_index;
 };
 
 List* init_list();
-void destruct_list(List *a, void (*free_element)(void *element));
+void delete_list(List *a, void (*free_element)(void *element));
 
 void list_append(List *dst, void *element);
 void list_insert(List *dst, void *element, int index);
-void list_remove(List *a, int index, void (*free_element)(void *element));
+void list_delete(List *a, int index, void (*free_element)(void *element));
 void* list_at_pos(List *a, int index);
 
 void print_list(List *a, void (*print_element)(void *element));
-void debug_print(List *a);
+void debug_print_list(List *a);
 
 #endif

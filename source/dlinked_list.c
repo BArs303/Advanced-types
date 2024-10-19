@@ -1,20 +1,20 @@
 #include "dlinked_list.h"
 
-static Node* create_list_node();
-static Node* get_node_at_index(List *a, int index);
-static bool check_index(List *a, int index);
+static list_node* create_list_node(void *data);
+static list_node* get_node_at_index(List *a, int index);
+static bool check_list_index(List *a, int index);
 
-static Node* forward(Node *initial_node, int begin, int end);
-static Node* backward(Node *initial_node, int begin, int end);
-static Node* choose_shortest_path(List *a, int index, int x, int y, int z);
+static list_node* forward(list_node *initial_node, int begin, int end);
+static list_node* backward(list_node *initial_node, int begin, int end);
+static list_node* choose_shortest_path(List *a, int index, int x, int y, int z);
 
 List *init_list()
 {
 	List *new_list;
 	new_list = malloc(sizeof(List));
 
-	new_list->head = create_list_node();
-	new_list->tail = create_list_node();
+	new_list->head = create_list_node(NULL);
+	new_list->tail = create_list_node(NULL);
 
 	new_list->head->next = new_list->tail;
 	new_list->tail->previous = new_list->head;
@@ -25,57 +25,73 @@ List *init_list()
 	return new_list;
 }
 
-static Node *create_list_node()
+static list_node* create_list_node(void *data)
 {
-	Node *a;
-	a = malloc(sizeof(Node));
-	a->data = NULL;
+	list_node *a;
+	a = malloc(sizeof(list_node));
+	a->data = data;
 	a->next = NULL;
 	a->previous = NULL;
 	return a;
 }
 
-void list_append(List *dst, void *element)
+void list_append(List *a, void *element)
 {
-	dst->tail->data = element;
-	dst->tail->next = create_list_node();
-	dst->tail->next->previous = dst->tail;
-	dst->tail = dst->tail->next;
-	dst->size++;
+	list_node *new_node;
+
+	new_node = create_list_node(NULL);
+	new_node->previous = a->tail;
+
+	a->tail->data = element;
+	a->tail->next = new_node;
+	a->tail = new_node;
+	a->size++;
 	return;
 }
 
-void list_insert(List *dst, void *element, int index)
+static void list_insert_between(List *a, void *element, int index)
 {
-	Node *a, *new_node;
-	if(check_index(dst, index))
-	{
-		a = get_node_at_index(dst, index);
+	list_node *new_node, *right, *left;
 
-		new_node = create_list_node();
-		new_node->next = a;
-		new_node->previous = a->previous;
-		a->previous = new_node;
-		new_node->previous->next = new_node;
-		new_node->data = element;
-		dst->size++;
+	new_node = create_list_node(element);
+	right = get_node_at_index(a, index);
+	left = right->previous;
+
+	right->previous = new_node;
+	left->next = new_node;
+	new_node->next = right;
+	new_node->previous = left;
+
+	a->size++;
+	return;
+}
+void list_insert(List *a, void *element, int index)
+{
+	list_node *new_node, *right, *left;
+	if(index == a->size)
+	{
+		list_append(a, element);
+	}
+	else if(check_list_index(a, index))
+	{
+		list_insert_between(a, element, index);
 	}
 	return;
 }
 
 void print_list(List *a, void (*print_element)(void *element))
 {
-	for(Node *i = a->head->next; i->next; i = i->next)
+	for(list_node *i = a->head->next; i->next; i = i->next)
 	{
 		print_element(i->data);
 	}
 	return;
 }
 
-void debug_print(List *a)
+void debug_print_list(List *a)
 {
 	printf("List\nHead %p\nTail %p\nLast used %p\nLast index %d\n\n", a->head, a->tail, a->last_used, a->last_index);
-	for(Node *i = a->head; i; i = i->next)
+	for(list_node *i = a->head; i; i = i->next)
 	{
 		printf("current node address %p\n"
 		"data address %p\n"
@@ -91,9 +107,9 @@ void debug_print(List *a)
 
 void* list_at_pos(List *a, int index)
 {
-	Node *tmp;
+	list_node *tmp;
 	void *ret = NULL;
-	if(check_index(a, index))
+	if(check_list_index(a, index))
 	{
 		tmp = get_node_at_index(a, index);
 		ret = tmp->data;
@@ -101,10 +117,10 @@ void* list_at_pos(List *a, int index)
 	return ret;
 }
 
-void list_remove(List *a, int index, void (*free_element)(void *element))
+void list_delete(List *a, int index, void (*free_element)(void *element))
 {
-	Node *deleted;
-	if(!check_index(a, index))
+	list_node *deleted;
+	if(!check_list_index(a, index))
 		return;
 
 	deleted = get_node_at_index(a, index);
@@ -119,9 +135,9 @@ void list_remove(List *a, int index, void (*free_element)(void *element))
 	return;
 }
 
-void destruct_list(List *a, void (*free_element)(void *element))
+void delete_list(List *a, void (*free_element)(void *element))
 {
-	Node *tmp;
+	list_node *tmp;
 	for(tmp = a->head->next; tmp->next; tmp = tmp->next)
 	{
 		if(tmp->data)
@@ -130,15 +146,15 @@ void destruct_list(List *a, void (*free_element)(void *element))
 		}
 		free(tmp->previous);
 	}
-	free(tmp->previous);
-	free(tmp);
+	free(tmp->previous);//free head
+	free(tmp);//free tail
 	free(a);
 	return;
 }
 
-static Node* get_node_at_index(List *a, int index)
+static list_node* get_node_at_index(List *a, int index)
 {
-	Node *ret;
+	list_node *ret;
 	int x, y, z;
 	
 	x = index; //between 0 and index
@@ -152,9 +168,9 @@ static Node* get_node_at_index(List *a, int index)
 	return ret;
 }
 
-static Node* choose_shortest_path(List *a, int index, int x, int y, int z)
+static list_node* choose_shortest_path(List *a, int index, int x, int y, int z)
 {
-	Node *ret;
+	list_node *ret;
 	if(x < y && x < z)
 	{
 		ret = forward(a->head->next, 0, index);
@@ -177,7 +193,7 @@ static Node* choose_shortest_path(List *a, int index, int x, int y, int z)
 	return ret;
 }
 
-static Node* forward(Node *initial_node, int begin, int end)
+static list_node* forward(list_node *initial_node, int begin, int end)
 {
 	for(int i = begin; i < end; i++)
 	{
@@ -186,7 +202,7 @@ static Node* forward(Node *initial_node, int begin, int end)
 	return initial_node;
 }
 
-static Node* backward(Node *initial_node, int begin, int end)
+static list_node* backward(list_node *initial_node, int begin, int end)
 {
 	for(int i = begin; i > end; i--)
 	{
@@ -195,9 +211,9 @@ static Node* backward(Node *initial_node, int begin, int end)
 	return initial_node;
 }
 
-static bool check_index(List *a, int index)
+static bool check_list_index(List *a, int index)
 {
-	if(index < a->size && index >= 0)
+	if(index >= 0 && index < a->size)
 	{
 		return true;
 	}

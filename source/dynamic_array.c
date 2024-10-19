@@ -38,7 +38,7 @@ static bool check_darray_index(Darray *a, int index)
 	return false;
 }
 
-void destruct_darray(Darray *a, void (*free_element)(void *element))
+void delete_darray(Darray *a, void (*free_element)(void *element))
 {
 	for(int i = 0; i < a->size; i++)
 	{
@@ -79,7 +79,7 @@ bool darray_insert(Darray *a, void *element, int index)
 	return false;
 }
 
-bool darray_remove(Darray *a, int index, void (*free_element)(void *element))
+bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 {
 	if(check_darray_index(a, index))
 	{

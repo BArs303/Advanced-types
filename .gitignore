@@ -1,7 +1,4 @@
 bin/
 main.elf
 source/main.c
-recipes.txt
-m1.mk
 old/
-items.json
