@@ -105,7 +105,7 @@ static RB_Node* rotate_node
 	int dir
 )
 {
-	RB_Node *g, *c, *m, *root; //grandparent, child and middle
+	RB_Node *g, *m, *root; //grandparent, child and middle
 	
 	g = p->parent;
 	root = g->parent;
@@ -254,7 +254,7 @@ void debug_print_rbt(RB_Node *a, void (*print_element)(void *element))
 
 static void swap_node_colors(RB_Node *a, RB_Node *b)
 {
-	enum node_color l, r;
+	enum node_color tmp;
 	if(a == NULL && b == NULL)
 		return;
 	else if(a == NULL)
@@ -263,9 +263,9 @@ static void swap_node_colors(RB_Node *a, RB_Node *b)
 		a->color = BLACK;
 	else
 	{
-		l = a->color;
+		tmp = a->color;
 		a->color = b->color;
-		b->color = l;
+		b->color = tmp;
 	}
 	return;
 }

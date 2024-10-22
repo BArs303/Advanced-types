@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -std=c99
+CFLAGS = -std=c99 -Wunused
 
 HEADERS_DIRS = headers
 LIB_DIR = lib

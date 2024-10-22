@@ -67,7 +67,6 @@ static void list_insert_between(List *a, void *element, int index)
 }
 void list_insert(List *a, void *element, int index)
 {
-	list_node *new_node, *right, *left;
 	if(index == a->size)
 	{
 		list_append(a, element);

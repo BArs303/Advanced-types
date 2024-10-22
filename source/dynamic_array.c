@@ -1,6 +1,9 @@
 #include "dynamic_array.h"
 
-static void shift_right(Darray *a, int index);
+static void darray_expand(Darray *a);
+static int darray_find_emptiness(Darray *a, int index);
+static void shift_right(Darray *a, int begin, int end);
+
 static void shift_left(Darray *a, int index);
 static bool check_darray_index(Darray *a, int index);
 
@@ -42,7 +45,10 @@ void delete_darray(Darray *a, void (*free_element)(void *element))
 {
 	for(int i = 0; i < a->size; i++)
 	{
-		free_element(a->array[i]);
+		if(a->array[i])//not null
+		{
+			free_element(a->array[i]);
+		}
 	}
 	free(a->array);
 	free(a);
@@ -60,17 +66,25 @@ void darray_clear(Darray *a, void (*free_element)(void *element))
 
 bool darray_append(Darray *a, void *element)
 {
-	shift_right(a, a->size);
-	a->array[a->size] = element;
+	int end;
+	end = darray_find_emptiness(a, a->size);
+	if(end == a->capacity)
+		darray_expand(a);
+	
+	a->array[end] = element;
 	a->size++;
 	return true;
 }
 
 bool darray_insert(Darray *a, void *element, int index)
 {
+	int end;
 	if(check_darray_index(a, index))
 	{
-		shift_right(a, index);
+		end = darray_find_emptiness(a, index);
+		if(end == a->capacity)
+			darray_expand(a);
+		shift_right(a, index, end);
 		a->array[index] = element;
 		a->size++;
 		return true;
@@ -81,7 +95,7 @@ bool darray_insert(Darray *a, void *element, int index)
 
 bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 {
-	if(check_darray_index(a, index))
+	if(check_darray_index(a, index) && a->array[index])
 	{
 		free_element(a->array[index]);
 		shift_left(a, index);
@@ -100,17 +114,22 @@ void print_darray(Darray *a, void(*print_element)(void *element))
 			print_element(a->array[i]);
 	}
 }
-
-static void shift_right(Darray *a, int index)
+static int darray_find_emptiness(Darray *a, int index)
 {
-	int step = DEFAULT_STEP_SIZE;
-	if(a->size == a->capacity)
-	{
-		a->array = realloc(a->array, sizeof(void*) * (a->capacity + step));
-		a->capacity += step;
-	}
-
-	for(int i = a->size; i > index; i--)
+	int end;
+	for(end = index; end < a->capacity && a->array[end] != NULL; end++)
+	{}
+	return end;
+}
+static void darray_expand(Darray *a)
+{
+	a->array = realloc(a->array, sizeof(void*) * (a->capacity + DEFAULT_STEP_SIZE));
+	a->capacity += DEFAULT_STEP_SIZE;
+	return;
+}
+static void shift_right(Darray *a, int begin, int end)
+{
+	for(int i = end; i > begin; i--)
 	{
 		a->array[i] = a->array[i-1];
 	}
