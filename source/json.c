@@ -381,3 +381,36 @@ static char* add_tabs(int level)
 	}
 	return str;
 }
+/*Delete section*/
+void delete_json(void *exemplar)
+{
+	JSON *a;
+	a = exemplar;
+	default_json_free(a->value, a->type);
+	free(a->key);
+	free(a);
+}
+
+void default_json_free(JSON_value data, Types type)
+{
+	switch(type)
+	{
+	case type_String:
+		free(data.string);
+	break;
+
+	case type_List:
+		delete_list(data.list, &delete_json);
+	break;
+
+	case type_Object:
+		delete_list(data.object, &delete_json);//replace to hashtable
+	break;
+
+	case type_Int:
+	break;
+
+	default:
+		printf("Error: Unknown JSON type\n");
+	}
+}

@@ -45,10 +45,7 @@ void delete_darray(Darray *a, void (*free_element)(void *element))
 {
 	for(int i = 0; i < a->size; i++)
 	{
-		if(a->array[i])//not null
-		{
-			free_element(a->array[i]);
-		}
+		free_element(a->array[i]);
 	}
 	free(a->array);
 	free(a);
@@ -70,7 +67,7 @@ bool darray_append(Darray *a, void *element)
 	end = darray_find_emptiness(a, a->size);
 	if(end == a->capacity)
 		darray_expand(a);
-	
+
 	a->array[end] = element;
 	a->size++;
 	return true;
@@ -95,7 +92,7 @@ bool darray_insert(Darray *a, void *element, int index)
 
 bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 {
-	if(check_darray_index(a, index) && a->array[index])
+	if(check_darray_index(a, index))
 	{
 		free_element(a->array[index]);
 		shift_left(a, index);

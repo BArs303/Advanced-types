@@ -35,6 +35,7 @@ typedef enum te Types;
 #include "red_black_tree.h"
 #include "rbt_set.h"
 #include "queue.h"
+#include "hmap.h"
 
 void ptr_swap(void **a, void **b);
 //#include "set.h" replaced

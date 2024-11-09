@@ -23,6 +23,8 @@ static void fixup
 );
 static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
 
+static int rbt_cn(RB_Node *a);
+
 RB_Node* create_red_black_node(void *data)
 {
 	RB_Node *a;
@@ -405,4 +407,21 @@ void rbt_delete
 	ptr_swap(&(x->data), &(c->data));
 	rbt_delete(a, c, free_element);
 	return;
+}
+
+/*Temporary functions*/
+int rbt_count_nodes(RBT *a)
+{
+	if(!a->root)
+		return 0;
+	return rbt_cn(a->root);
+}
+
+static int rbt_cn(RB_Node *a)
+{
+	if(a)
+	{
+		return rbt_cn(a->child[LEFT]) + rbt_cn(a->child[RIGHT]) + 1;
+	}
+	return 0;
 }

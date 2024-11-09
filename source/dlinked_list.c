@@ -139,10 +139,7 @@ void delete_list(List *a, void (*free_element)(void *element))
 	list_node *tmp;
 	for(tmp = a->head->next; tmp->next; tmp = tmp->next)
 	{
-		if(tmp->data)
-		{
-			free_element(tmp->data);
-		}
+		free_element(tmp->data);
 		free(tmp->previous);
 	}
 	free(tmp->previous);//free head

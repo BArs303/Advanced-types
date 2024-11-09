@@ -25,5 +25,6 @@ typedef struct json JSON;
 JSON* json_parse(char *str);
 JSON* json_parse_file(const char *filename);
 char* json_stringify(JSON *a);
-
+void delete_json(void *a);
+void default_json_free(JSON_value data, Types type);
 #endif

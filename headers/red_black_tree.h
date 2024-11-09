@@ -60,4 +60,6 @@ RB_Node* create_node(void *data);
 
 void print_rbt(RBT *a, void (*print_tree)(void *element));
 void debug_print_rbt(RB_Node *a, void (*print_tree)(void *element));
+
+int rbt_count_nodes(RBT *a);
 #endif
