@@ -8,3 +8,8 @@ void ptr_swap(void **a, void **b)
 	*b = t;
 	return;
 }
+
+void passive_destruct(void *element)
+{
+	return;
+}

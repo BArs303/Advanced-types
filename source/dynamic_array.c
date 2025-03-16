@@ -105,10 +105,13 @@ bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 
 void print_darray(Darray *a, void(*print_element)(void *element))
 {
-	for(int i = 0; i < a->size; i++)
+	for(int i = 0; i < a->capacity; i++)
 	{
 		if(a->array[i]) //if element exists
+		{
+			printf("dynamic array element index %d\n", i);
 			print_element(a->array[i]);
+		}
 	}
 }
 static int darray_find_emptiness(Darray *a, int index)
@@ -142,7 +145,7 @@ static void shift_left(Darray *a, int index)
 	return;
 }
 
-bool darray_replace(Darray *a, int index, void *new_element, void(*free_element)(void *element))
+bool darray_replace(Darray *a, void *new_element, int index, void(*free_element)(void *element))
 {
 	if(check_darray_index(a, index))
 	{

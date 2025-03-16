@@ -38,6 +38,7 @@ typedef enum te Types;
 #include "hmap.h"
 
 void ptr_swap(void **a, void **b);
+void passive_destruct(void *element);
 //#include "set.h" replaced
 
 #endif

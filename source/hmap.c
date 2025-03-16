@@ -1,22 +1,22 @@
 #include "hmap.h"
 
-static unsigned int hash_function(char *key);
+static unsigned int hash_function(const char *key);
+static HNode* init_hash_node(const char *key, void *value);
+static void print_hash_values(void *element);
+static void expand_hash_map(HMap *a);
 
-Hmap* init_hmap()
+static void print_hash_node(void *element);
+
+
+HMap* init_hmap()
 {
-	Hmap *a;
-	int table_size = 7;
-	a = malloc(sizeof(Hmap));
-	a->array = malloc(sizeof(void*) * table_size);
-	for(int i = 0; i < table_size; i++)
-	{
-		a->array[i] = NULL;
-	}
-	a->size = table_size;
+	HMap *a;
+	a = malloc(sizeof(HMap));
+	a->array = init_darray_with_length(HMAP_DEFAULT_SIZE);
 	return a;
 }
 
-static unsigned int hash_function(char *key)
+static unsigned int hash_function(const char *key)
 {
 	unsigned int hash = 0;
 	for(; *key; key++)
@@ -26,84 +26,117 @@ static unsigned int hash_function(char *key)
 	return hash;
 }
 
-void hmap_insert(Hmap *a, void *element, char *key)
+static HNode* init_hash_node(const char *key, void *value)
 {
-	Hnode *n;
-	struct hmap_object *obj;
+	HNode *node;
+	node = malloc(sizeof(HNode));
+	node->key = key;
+	node->value = value;
+	return node;
+}
+void hmap_insert(HMap *a, const char *key, void *value)
+{
+	HNode *node;
 	List *values;
 	unsigned int index;
-
-	n = malloc(sizeof(Hnode));
-	n->key = key;
-	n->value = element;
-
-	index = hash_function(key) % a->size;
-	//printf("insert hash %d\n", index);
-
-	if(!(a->array[index]))
+	node = init_hash_node(key, value);
+	index = hash_function(key);
+	printf("before hmap insert. index %u, capacity %d\n", index, a->array->capacity);
+	index = index % a->array->capacity;
+	values = darray_at_pos(a->array, index);
+	if(!values)
 	{
-		obj = malloc(sizeof(struct hmap_object));
-		//unique index
-		//printf("first entry of hash\n");
-		obj->data = n;
-		obj->single_value = true;
-		a->array[index] = obj;
-		return;
-	}
-	obj = a->array[index];
-	if(obj->single_value)
-	{
-		//printf("only one value with hash\n");
 		values = init_list();
-		list_append(values, obj->data);
-		obj->data = values;
-		obj->single_value = false;
 	}
-	list_append(obj->data, n);
-	printf("related %f\n", (float)a->size /2);
+	list_append(values, node);
+	darray_replace(a->array, values, index, &passive_destruct);
+
+	if(values->size > a->array->capacity / 2)
+	{
+		expand_hash_map(a);
+	}
 	return;
 }
 
-void* hmap_get(Hmap *a, char *key)
+static void expand_hash_map(HMap *a)
 {
-	Hnode *n;
+	Darray *old_array, *new_array;
+	HNode *node;
+	List *old_values, *new_values;
+	unsigned int index;
+	int step = 2;
+
+	old_array = a->array;
+	new_array = init_darray_with_length(old_array->capacity * step);
+
+	for(int i = 0; i < old_array->capacity; i++)
+	{
+		old_values = darray_at_pos(old_array, i);
+		if(!old_values)
+			continue;
+		for(int j = 0; j < old_values->size; j++)
+		{
+			node = list_at_pos(old_values, j);
+
+			index = hash_function(node->key) % new_array->capacity;
+			new_values = darray_at_pos(new_array, index);
+			if(!new_values)
+			{
+				new_values = init_list();
+			}
+
+			list_append(new_values, node);
+			darray_replace(new_array, new_values, index, &passive_destruct);
+		}
+		//all nodes are copied to the new array,
+		//so delete function is not required
+		delete_list(old_values, &passive_destruct);
+	}
+	//all values in the array have already been cleared
+	delete_darray(old_array, &passive_destruct);
+	a->array = new_array;
+	return;
+}
+
+void* hmap_get(HMap *a, const char *key)
+{
+	HNode *n;
 	List *values;
-	struct hmap_object *obj;
 	unsigned int index;
 
-	index = hash_function(key) % a->size;
-	printf("get index %d\n", index);
-	if(a->array[index])
+	index = hash_function(key) % a->array->capacity;
+	values = darray_at_pos(a->array, index);
+	if(values)
 	{
-		printf("value with hash exists\n");
-		obj = a->array[index];
-		if(obj->single_value)
+		for(int i = 0; i < values->size; i++)
 		{
-			printf("its unique hash in hashtable\n");
-			n = obj->data;
-			printf("key %s\n", n->key);
-			if(strcmp(n->key, key) == 0)
+			n = list_at_pos(values, i);
+			if(strcmp(key, n->key) == 0)
 				return n->value;
 		}
-		else
-		{
-			values = obj->data;
-			printf("in hashtable %d values with hash\n", values->size);
-			for(int i = 0; i < values->size; i++)
-			{
-				n = list_at_pos(values, i);
-				printf("searching in list %d key %s hashtable key %s\n", i, key, n->key);
-			}
-
-			for(int i = 0; i < values->size; i++)
-			{
-				n = list_at_pos(values, i);
-				if(strcmp(n->key, key) == 0)
-					return n->value;
-			}
-
-		}
 	}
-	printf("hashtable value is null\n");
 	return NULL;
 }
+
+void print_hmap(HMap *a)
+{
+	print_darray(a->array, print_hash_values);
+}
+
+static void print_hash_values(void *element)
+{
+	if(element)
+	{
+		print_list(element, print_hash_node);
+	}
+	printf("Empty index\n");
+}
+static void print_hash_node(void *element)
+{
+	HNode *node;
+	int *a;
+	node = element;
+	a = node->value;
+	printf("key %s value %d\n", node->key, *a);
+}
+

@@ -26,5 +26,5 @@ bool darray_insert(Darray *a, void *element, int index);
 bool darray_delete(Darray *a, int index, void(*free_element)(void *element));
 
 void* darray_at_pos(Darray *a, int index);
-bool darray_replace(Darray *a, int index, void *new_element, void(*free_element)(void *element));
+bool darray_replace(Darray *a, void *new_element, int index, void(*free_element)(void *element));
 #endif
