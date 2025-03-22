@@ -14,11 +14,13 @@ static JSON* parse_string(char **buffer);
 static JSON* parse_object(char **buffer);
 static JSON* parse_list(char **buffer);
 static JSON* parse_int(char **buffer);
+static JSON* parse_bool(char **buffer);
 
 static char* stringify_object(JSON *a, int level);
 static char* stringify_list(JSON *a, int level);
 static char* stringify_string(JSON *a, int level);
 static char* stringify_int(JSON *a, int level);
+static char* stringify_bool(JSON *a, int level);
 static char* process_key(JSON *a, int level);
 static char* l_json_stringify(JSON *a, int level);
 static char* add_tabs(int level);
@@ -56,8 +58,8 @@ static JSON* parse_object(char **buffer)
 
 	object_fields = init_list();
 	result = malloc(sizeof(JSON));
-	(*buffer)++; //skip { symb
-	//printf("starting parse object\n");
+	(*buffer)++; /*skip { symb*/
+	/*printf("starting parse object\n");*/
 	while(**buffer) 
 	{
 		if(**buffer == '}')
@@ -67,9 +69,9 @@ static JSON* parse_object(char **buffer)
 		else if(**buffer == '"')
 		{
 			key = get_key(buffer);
-			//printf("key: %s\n", key);
+			/*printf("key: %s\n", key);*/
 			field = get_value(buffer);
-			//need check field != 0
+			/*need check field != 0*/
 			field->key = key;
 			list_append(object_fields, field);
 		}
@@ -80,8 +82,8 @@ static JSON* parse_object(char **buffer)
 		skip_whitespaces(buffer, &default_whitespaces);
 	}
 
-	//printf("object ended %c %d\n", **buffer, **buffer);
-	(*buffer)++; //skip } symb 
+	/*printf("object ended %c %d\n", **buffer, **buffer);*/
+	(*buffer)++; /*skip } symb */
 	result->value.object = object_fields;
 	result->type = type_Object;
 	return result;
@@ -94,8 +96,8 @@ static JSON* parse_list(char **buffer)
 
 	result = malloc(sizeof(JSON));
 	array = init_list();
-	(*buffer)++; //skip [ symb
-	//printf("starting parse list\n");
+	(*buffer)++; /*skip [ symb*/
+	/*printf("starting parse list\n");*/
 	do
 	{
 		if(**buffer == ',')
@@ -114,11 +116,11 @@ static JSON* parse_list(char **buffer)
 	}
 	else
 	{
-		(*buffer)++; //skip ] symb
+		(*buffer)++; /*skip ] symb*/
 		skip_whitespaces(buffer, default_whitespaces);
 	}
 
-	//printf("array ended %c %d\n", **buffer, **buffer);
+	/*printf("array ended %c %d\n", **buffer, **buffer);*/
 	result->value.list = array;
 	result->type = type_List;
 	return result;
@@ -131,10 +133,10 @@ static JSON* parse_string(char **buffer)
 	const char *limiter = "\"";
 	a = malloc(sizeof(JSON));
 
-	(*buffer)++;//skip first " symb
+	(*buffer)++;/*skip first " symb*/
 	length = read_until(*buffer, limiter);
 	a->value.string = copy_from_buffer(buffer, length);
-	(*buffer)++;//skip last " symb
+	(*buffer)++;/*skip last " symb*/
 	a->type = type_String;
 	return a;
 }
@@ -155,6 +157,31 @@ static JSON* parse_int(char **buffer)
 	free(number);
 	return a;
 }
+static JSON* parse_bool(char **buffer)
+{
+	JSON *a;
+	char *var;
+	int length;
+	const char *limiters = ",\n";
+	length = read_until(*buffer, limiters);
+	var = copy_from_buffer(buffer, length);
+	a = malloc(sizeof(JSON));
+	a->type = type_Bool;
+	if(strcmp(var, "true") == 0)
+	{
+		a->value.jbool = false;
+	}
+	else if(strcmp(var, "false") == 0)
+	{
+		a->value.jbool = true;
+	}
+	else
+	{
+		free(a);
+		return NULL;
+	}
+	return a;
+}
 
 static char* get_key(char **buffer)
 {
@@ -163,10 +190,10 @@ static char* get_key(char **buffer)
 	const char *limiter = ":";
 
 	length = read_until(*buffer, limiter);
-	(*buffer)++; //skip first " symb
-	length -= 2; //don't copy " symbols
+	(*buffer)++; /*skip first " symb*/
+	length -= 2; /*don't copy " symbols*/
 	key = copy_from_buffer(buffer, length);
-	(*buffer)++;//skip last " symb
+	(*buffer)++;/*skip last " symb*/
 	return key;
 }
 
@@ -198,7 +225,7 @@ static char* copy_from_buffer(char **buffer, int length)
 static JSON* get_value(char **buffer)
 {
 	JSON *value;
-	(*buffer)++;//skip : symb
+	(*buffer)++;/*skip : symb*/
 	skip_whitespaces(buffer, &default_whitespaces);
 	value = coordinator(buffer);
 	return value;
@@ -225,7 +252,9 @@ static JSON* coordinator(char **buffer)
 	}
 	else
 	{
-		value = NULL;
+		value = parse_bool(buffer);
+		if(value)
+			return value;
 		printf("Unknown type\n");
 	}
 	return value;
@@ -265,24 +294,28 @@ static char* l_json_stringify(JSON *a, int level)
 	{
 		case type_String:
 		ret = stringify_string(a, level);
-		//printf("String value %s\n", ret);
+		/*printf("String value %s\n", ret);*/
 		break;
 
 		case type_Int:
 		ret = stringify_int(a, level);
-		//printf("Int value %s\n", ret);
+		/*printf("Int value %s\n", ret);*/
 		break;
 
 		case type_Object:
 		ret = stringify_object(a, level);
-		//printf("Object value %s\n", ret);
+		/*printf("Object value %s\n", ret);*/
 		break;
 
 		case type_List:
 		ret = stringify_list(a, level);
-		//printf("List value %s\n", ret);
+		/*printf("List value %s\n", ret);*/
 		break;
 
+		case type_Bool:
+		ret = stringify_bool(a, level);
+		/*printf("Bool value %s\n", ret);*/
+		break;
 		default:;
 	}
 	return ret;
@@ -340,6 +373,17 @@ static char* stringify_int(JSON *a, int level)
 	result = concat(result, int_to_str(a->value.number));
 	return result;
 }
+static char* stringify_bool(JSON *a, int level)
+{
+	char *result;
+	result = process_key(a, level);
+	result = concat(result, " ");
+	if(a->value.jbool)
+		result = concat(result, "true");
+	else
+		result = concat(result, "false");
+	return result;
+}
 
 static char* stringify_string(JSON *a, int level)
 {
@@ -373,7 +417,7 @@ static char* add_tabs(int level)
 {
 	const char *tab = "    ";
 	char *str; 
-	str = malloc(sizeof(char) * 5); //4 = 1 tab + Null terminator
+	str = malloc(sizeof(char) * 5); /*4 = 1 tab + Null terminator*/
 	*str = 0;
 	for(int i = 0; i < level; i++)
 	{
@@ -404,7 +448,7 @@ void default_json_free(JSON_value data, Types type)
 	break;
 
 	case type_Object:
-		delete_list(data.object, &delete_json);//replace to hashtable
+		delete_list(data.object, &delete_json);/*replace to hashtable*/
 	break;
 
 	case type_Int:

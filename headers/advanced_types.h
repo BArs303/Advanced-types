@@ -22,6 +22,7 @@ enum te
 	type_Darray,
 	type_List,
 	type_Object,
+	type_Bool,
 	type_Error
 };
 

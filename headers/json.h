@@ -9,8 +9,8 @@ union json_val
 	float fnumber;
 	char *string;
 	List *list;
-	List *object; //need to replace with normal data type
-	bool b;
+	List *object; /*need to replace with normal data type*/
+	bool jbool;
 };
 typedef union json_val JSON_value;
 
