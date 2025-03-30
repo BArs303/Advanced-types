@@ -1,7 +1,7 @@
 #include "dynamic_array.h"
 
 static void darray_expand(Darray *a);
-static int darray_find_emptiness(Darray *a, int index);
+static int darray_find_emptiness(Darray *a);
 static void shift_right(Darray *a, int begin, int end);
 
 static void shift_left(Darray *a, int index);
@@ -64,7 +64,7 @@ void darray_clear(Darray *a, void (*free_element)(void *element))
 bool darray_append(Darray *a, void *element)
 {
 	int end;
-	end = darray_find_emptiness(a, a->size);
+	end = darray_find_emptiness(a);
 	if(end == a->capacity)
 		darray_expand(a);
 
@@ -78,7 +78,7 @@ bool darray_insert(Darray *a, void *element, int index)
 	int end;
 	if(check_darray_index(a, index))
 	{
-		end = darray_find_emptiness(a, index);
+		end = darray_find_emptiness(a);
 		if(end == a->capacity)
 			darray_expand(a);
 		shift_right(a, index, end);
@@ -105,21 +105,25 @@ bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 
 void print_darray(Darray *a, void(*print_element)(void *element))
 {
-	for(int i = 0; i < a->capacity; i++)
+	int i;
+	for(i = 0; i < a->capacity; i++)
 	{
 		if(a->array[i]) //if element exists
 		{
-			printf("dynamic array element index %d\n", i);
+			printf("darray index: %d\n", i);
 			print_element(a->array[i]);
 		}
 	}
 }
-static int darray_find_emptiness(Darray *a, int index)
+static int darray_find_emptiness(Darray *a)
 {
 	int end;
-	for(end = index; end < a->capacity && a->array[end] != NULL; end++)
-	{}
-	return end;
+	for(end = a->capacity - 1; end >= 0; end--)
+	{
+		if(a->array[end])
+			break;
+	}
+	return ++end;
 }
 static void darray_expand(Darray *a)
 {
@@ -127,9 +131,11 @@ static void darray_expand(Darray *a)
 	a->capacity += DEFAULT_STEP_SIZE;
 	return;
 }
+
 static void shift_right(Darray *a, int begin, int end)
 {
-	for(int i = end; i > begin; i--)
+	int i;
+	for(i = end; i > begin; i--)
 	{
 		a->array[i] = a->array[i-1];
 	}
@@ -138,7 +144,8 @@ static void shift_right(Darray *a, int begin, int end)
 
 static void shift_left(Darray *a, int index)
 {
-	for(int i = index; i < a->size-1; i++)
+	int i;
+	for(i = index; i < a->size-1; i++)
 	{
 		a->array[i] = a->array[i+1];
 	}

@@ -4,3 +4,5 @@ source/main.c
 old/
 build/*
 !build/.gitignore
+recipes.json
+Makefile.old

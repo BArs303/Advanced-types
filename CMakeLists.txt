@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31.3)
 
 Project(Advanced-types)
-
+add_compile_options(-O2 -Wall)
 file(GLOB SOURCES "source/*.c")
 add_library(${PROJECT_NAME} ${SOURCES})
 
