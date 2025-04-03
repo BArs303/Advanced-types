@@ -55,6 +55,7 @@ void rbt_delete
 	RB_Node *element,
 	void (*free_element)(void *element)
 );
+void delete_rbt(RBT *a, void (*free_element)(void *element));
 
 RB_Node* create_node(void *data);
 

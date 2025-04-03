@@ -21,6 +21,7 @@ static char* stringify_list(JSON *a, int level);
 static char* stringify_string(JSON *a, int level);
 static char* stringify_int(JSON *a, int level);
 static char* stringify_bool(JSON *a, int level);
+
 static char* process_key(JSON *a, int level);
 static char* l_json_stringify(JSON *a, int level);
 static char* add_tabs(int level);
@@ -426,13 +427,16 @@ static char* add_tabs(int level)
 	return str;
 }
 /*Delete section*/
-void delete_json(void *exemplar)
+void delete_json(void *element)
 {
 	JSON *a;
-	a = exemplar;
-	default_json_free(a->value, a->type);
-	free(a->key);
-	free(a);
+	a = element;
+	if(a)
+	{
+		default_json_free(a->value, a->type);
+		free(a->key);
+		free(a);
+	}
 }
 
 void default_json_free(JSON_value data, Types type)
@@ -452,6 +456,9 @@ void default_json_free(JSON_value data, Types type)
 	break;
 
 	case type_Int:
+	break;
+
+	case type_Bool:
 	break;
 
 	default:

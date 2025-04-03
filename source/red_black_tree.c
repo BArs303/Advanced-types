@@ -24,6 +24,7 @@ static void fixup
 static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
 
 static int rbt_cn(RB_Node *a);
+static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element));
 
 RB_Node* create_red_black_node(void *data)
 {
@@ -354,6 +355,28 @@ case_32:
 	rotate_node(a, s, dir);//rotate sibling and parent
 	return;
 
+}
+
+void delete_rbt(RBT *a, void (*free_element)(void *element))
+{
+	if(a)
+	{
+		delete_rbt_node(a->root, free_element);
+		free(a);
+	}
+}
+
+static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element))
+{
+	if(a)
+	{
+		if(a->child[LEFT])
+			delete_rbt_node(a->child[LEFT], free_element);
+		if(a->child[RIGHT])
+			delete_rbt_node(a->child[RIGHT], free_element);
+		free_element(a->data);
+		free(a);
+	}
 }
 
 void rbt_delete

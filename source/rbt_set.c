@@ -51,7 +51,7 @@ void print_set(Set *a, void (*print_element)(void *element))
 
 void delete_set(Set *a, void (*free_element)(void *element))
 {
-	
+	delete_rbt(a, free_element);
 }
 
 List* set_to_list(Set *a)
