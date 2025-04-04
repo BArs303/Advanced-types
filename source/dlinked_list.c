@@ -1,12 +1,12 @@
 #include "dlinked_list.h"
 
 static list_node* create_list_node(void *data);
-static list_node* get_node_at_index(List *a, int index);
-static bool check_list_index(List *a, int index);
+static list_node* get_node_at_index(List *a, unsigned int index);
+static bool check_list_index(List *a, unsigned int index);
 
-static list_node* forward(list_node *initial_node, int begin, int end);
-static list_node* backward(list_node *initial_node, int begin, int end);
-static list_node* choose_shortest_path(List *a, int index, int x, int y, int z);
+static list_node* forward(list_node *initial_node, unsigned int begin, unsigned int end);
+static list_node* backward(list_node *initial_node, unsigned int begin, unsigned int end);
+static list_node* choose_shortest_path(List *a, unsigned int index, unsigned int x, unsigned int y, unsigned int z);
 
 List *init_list()
 {
@@ -49,7 +49,7 @@ void list_append(List *a, void *element)
 	return;
 }
 
-static void list_insert_between(List *a, void *element, int index)
+static void list_insert_between(List *a, void *element, unsigned int index)
 {
 	list_node *new_node, *right, *left;
 
@@ -65,7 +65,7 @@ static void list_insert_between(List *a, void *element, int index)
 	a->size++;
 	return;
 }
-void list_insert(List *a, void *element, int index)
+void list_insert(List *a, void *element, unsigned int index)
 {
 	if(index == a->size)
 	{
@@ -80,7 +80,8 @@ void list_insert(List *a, void *element, int index)
 
 void print_list(List *a, void (*print_element)(void *element))
 {
-	for(list_node *i = a->head->next; i->next; i = i->next)
+	list_node *i;
+	for(i = a->head->next; i->next; i = i->next)
 	{
 		print_element(i->data);
 	}
@@ -89,8 +90,9 @@ void print_list(List *a, void (*print_element)(void *element))
 
 void debug_print_list(List *a)
 {
+	list_node *i;
 	printf("List\nHead %p\nTail %p\nLast used %p\nLast index %d\n\n", a->head, a->tail, a->last_used, a->last_index);
-	for(list_node *i = a->head; i; i = i->next)
+	for(i = a->head; i; i = i->next)
 	{
 		printf("current node address %p\n"
 		"data address %p\n"
@@ -104,7 +106,7 @@ void debug_print_list(List *a)
 	printf("End of List\n");
 }
 
-void* list_at_pos(List *a, int index)
+void* list_at_pos(List *a, unsigned int index)
 {
 	list_node *tmp;
 	void *ret = NULL;
@@ -116,7 +118,7 @@ void* list_at_pos(List *a, int index)
 	return ret;
 }
 
-void list_delete(List *a, int index, void (*free_element)(void *element))
+void list_delete(List *a, unsigned int index, void (*free_element)(void *element))
 {
 	list_node *deleted;
 	if(!check_list_index(a, index))
@@ -142,20 +144,23 @@ void delete_list(List *a, void (*free_element)(void *element))
 		free_element(tmp->data);
 		free(tmp->previous);
 	}
-	free(tmp->previous);//free head
-	free(tmp);//free tail
+	/*free last elements*/
+	free(tmp->previous);
+	free(tmp);
 	free(a);
 	return;
 }
 
-static list_node* get_node_at_index(List *a, int index)
+static list_node* get_node_at_index(List *a, unsigned int index)
 {
 	list_node *ret;
-	int x, y, z;
-	
-	x = index; //between 0 and index
-	y = abs(index - a->last_index); //between current index and last used index
-	z = a->size - index -1; //between n and index where n = last index of list
+	unsigned int x, y, z;
+	/*between 0 and index*/
+	x = index;
+	/*between current index and last used index*/
+	y = abs(index - a->last_index);
+	/*between last element and index*/
+	z = a->size - index -1;
 
 	ret = choose_shortest_path(a, index, x, y, z);
 
@@ -164,7 +169,14 @@ static list_node* get_node_at_index(List *a, int index)
 	return ret;
 }
 
-static list_node* choose_shortest_path(List *a, int index, int x, int y, int z)
+static list_node* choose_shortest_path
+(
+	List *a,
+	unsigned int index,
+	unsigned int x,
+	unsigned int y,
+	unsigned int z
+)
 {
 	list_node *ret;
 	if(x < y && x < z)
@@ -189,25 +201,37 @@ static list_node* choose_shortest_path(List *a, int index, int x, int y, int z)
 	return ret;
 }
 
-static list_node* forward(list_node *initial_node, int begin, int end)
+static list_node* forward
+(
+	list_node *initial_node,
+	unsigned int begin,
+	unsigned int end
+)
 {
-	for(int i = begin; i < end; i++)
+	unsigned int i;
+	for(i = begin; i < end; i++)
 	{
 		initial_node = initial_node->next;
 	}
 	return initial_node;
 }
 
-static list_node* backward(list_node *initial_node, int begin, int end)
+static list_node* backward
+(
+	list_node *initial_node,
+	unsigned int begin,
+	unsigned int end
+)
 {
-	for(int i = begin; i > end; i--)
+	unsigned int i;
+	for(i = begin; i > end; i--)
 	{
 		initial_node = initial_node->previous;
 	}
 	return initial_node;
 }
 
-static bool check_list_index(List *a, int index)
+static bool check_list_index(List *a, unsigned int index)
 {
 	if(index >= 0 && index < a->size)
 	{

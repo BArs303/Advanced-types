@@ -2,12 +2,12 @@
 
 static void darray_expand(Darray *a);
 static int darray_find_emptiness(Darray *a);
-static void shift_right(Darray *a, int begin, int end);
+static void shift_right(Darray *a, unsigned int begin, unsigned int end);
 
-static void shift_left(Darray *a, int index);
-static bool check_darray_index(Darray *a, int index);
+static void shift_left(Darray *a, unsigned int index);
+static bool check_darray_index(Darray *a, unsigned int index);
 
-Darray *init_darray_with_length(int size)
+Darray *init_darray_with_length(unsigned int size)
 {
 	Darray *a;
 	a = malloc(sizeof(Darray));
@@ -26,7 +26,7 @@ Darray* init_darray()
 	return init_darray_with_length(DEFAULT_DARRAY_SIZE);
 }
 
-void* darray_at_pos(Darray *a, int index)
+void* darray_at_pos(Darray *a, unsigned int index)
 {
 	if(check_darray_index(a, index))
 	{
@@ -34,7 +34,7 @@ void* darray_at_pos(Darray *a, int index)
 	}
 	return NULL;
 }
-static bool check_darray_index(Darray *a, int index)
+static bool check_darray_index(Darray *a, unsigned int index)
 {
 	if(index >= 0 && index < a->capacity)
 		return true;
@@ -73,9 +73,9 @@ bool darray_append(Darray *a, void *element)
 	return true;
 }
 
-bool darray_insert(Darray *a, void *element, int index)
+bool darray_insert(Darray *a, void *element, unsigned int index)
 {
-	int end;
+	unsigned int end;
 	if(check_darray_index(a, index))
 	{
 		end = darray_find_emptiness(a);
@@ -86,11 +86,11 @@ bool darray_insert(Darray *a, void *element, int index)
 		a->size++;
 		return true;
 	}
-	printf("Invalid index\n");
+	fprintf(stderr, "Invalid index\n");
 	return false;
 }
 
-bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
+bool darray_delete(Darray *a, unsigned int index, void (*free_element)(void *element))
 {
 	if(check_darray_index(a, index))
 	{
@@ -99,13 +99,13 @@ bool darray_delete(Darray *a, int index, void (*free_element)(void *element))
 		a->size--;
 		return true;
 	}
-	printf("Invalid index\n");
+	fprintf(stderr, "Invalid index\n");
 	return false;
 }
 
 void print_darray(Darray *a, void(*print_element)(void *element))
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < a->capacity; i++)
 	{
 		if(a->array[i]) //if element exists
@@ -117,7 +117,7 @@ void print_darray(Darray *a, void(*print_element)(void *element))
 }
 static int darray_find_emptiness(Darray *a)
 {
-	int end;
+	unsigned int end;
 	for(end = a->capacity - 1; end >= 0; end--)
 	{
 		if(a->array[end])
@@ -132,9 +132,9 @@ static void darray_expand(Darray *a)
 	return;
 }
 
-static void shift_right(Darray *a, int begin, int end)
+static void shift_right(Darray *a, unsigned int begin, unsigned int end)
 {
-	int i;
+	unsigned int i;
 	for(i = end; i > begin; i--)
 	{
 		a->array[i] = a->array[i-1];
@@ -142,9 +142,9 @@ static void shift_right(Darray *a, int begin, int end)
 	return;
 }
 
-static void shift_left(Darray *a, int index)
+static void shift_left(Darray *a, unsigned int index)
 {
-	int i;
+	unsigned int i;
 	for(i = index; i < a->size-1; i++)
 	{
 		a->array[i] = a->array[i+1];
@@ -152,7 +152,7 @@ static void shift_left(Darray *a, int index)
 	return;
 }
 
-bool darray_replace(Darray *a, void *new_element, int index, void(*free_element)(void *element))
+bool darray_replace(Darray *a, void *new_element, unsigned int index, void(*free_element)(void *element))
 {
 	if(check_darray_index(a, index))
 	{

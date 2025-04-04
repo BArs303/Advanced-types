@@ -26,6 +26,8 @@ static char* process_key(JSON *a, int level);
 static char* l_json_stringify(JSON *a, int level);
 static char* add_tabs(int level);
 
+static void default_json_free(JSON_value data, Types type);
+
 JSON* json_parse_file(const char *fn)
 {
 	char *str;
@@ -60,7 +62,6 @@ static JSON* parse_object(char **buffer)
 	object_fields = init_list();
 	result = malloc(sizeof(JSON));
 	(*buffer)++; /*skip { symb*/
-	/*printf("starting parse object\n");*/
 	while(**buffer) 
 	{
 		if(**buffer == '}')
@@ -70,7 +71,6 @@ static JSON* parse_object(char **buffer)
 		else if(**buffer == '"')
 		{
 			key = get_key(buffer);
-			/*printf("key: %s\n", key);*/
 			field = get_value(buffer);
 			/*need check field != 0*/
 			field->key = key;
@@ -83,7 +83,6 @@ static JSON* parse_object(char **buffer)
 		skip_whitespaces(buffer, &default_whitespaces);
 	}
 
-	/*printf("object ended %c %d\n", **buffer, **buffer);*/
 	(*buffer)++; /*skip } symb */
 	result->value.object = object_fields;
 	result->type = type_Object;
@@ -98,7 +97,6 @@ static JSON* parse_list(char **buffer)
 	result = malloc(sizeof(JSON));
 	array = init_list();
 	(*buffer)++; /*skip [ symb*/
-	/*printf("starting parse list\n");*/
 	do
 	{
 		if(**buffer == ',')
@@ -113,7 +111,7 @@ static JSON* parse_list(char **buffer)
 
 	if(**buffer != ']')
 	{
-		printf("error: not closed array\n");
+		fprintf(stderr, "error: not closed array\n");
 	}
 	else
 	{
@@ -121,7 +119,6 @@ static JSON* parse_list(char **buffer)
 		skip_whitespaces(buffer, default_whitespaces);
 	}
 
-	/*printf("array ended %c %d\n", **buffer, **buffer);*/
 	result->value.list = array;
 	result->type = type_List;
 	return result;
@@ -256,7 +253,7 @@ static JSON* coordinator(char **buffer)
 		value = parse_bool(buffer);
 		if(value)
 			return value;
-		printf("Unknown type\n");
+		fprintf(stderr, "Unknown type\n");
 	}
 	return value;
 }
@@ -348,11 +345,12 @@ static char* stringify_list(JSON *a, int level)
 {
 	char *result;
 	List *tmp = a->value.list;
+	unsigned int i;
 	result = process_key(a, level);
 	result = concat(result, "\n");
 	result = concat(result, add_tabs(level));
 	result = concat(result, "[\n");
-	for(int i = 0; i < tmp->size-1; i++)
+	for(i = 0; i < tmp->size-1; i++)
 	{
 		result = concat(result, add_tabs(level+1));
 		result = concat(result, l_json_stringify((JSON*)list_at_pos(tmp, i), level+1));
@@ -439,7 +437,7 @@ void delete_json(void *element)
 	}
 }
 
-void default_json_free(JSON_value data, Types type)
+static void default_json_free(JSON_value data, Types type)
 {
 	switch(type)
 	{
@@ -462,6 +460,6 @@ void default_json_free(JSON_value data, Types type)
 	break;
 
 	default:
-		printf("Error: Unknown JSON type\n");
+		fprintf(stderr, "Error: Unknown JSON type\n");
 	}
 }
