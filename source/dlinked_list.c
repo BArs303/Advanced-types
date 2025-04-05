@@ -21,7 +21,7 @@ List *init_list()
 	new_list->size = 0;
 
 	new_list->last_used = NULL;
-	new_list->last_index = -1;
+	new_list->last_index = 0;
 	return new_list;
 }
 
@@ -65,6 +65,7 @@ static void list_insert_between(List *a, void *element, unsigned int index)
 	a->size++;
 	return;
 }
+
 void list_insert(List *a, void *element, unsigned int index)
 {
 	if(index == a->size)
@@ -158,10 +159,13 @@ static list_node* get_node_at_index(List *a, unsigned int index)
 	/*between 0 and index*/
 	x = index;
 	/*between current index and last used index*/
-	y = abs(index - a->last_index);
+	if(index > a->last_index)
+		y = index - a->last_index;
+	else
+		y = a->last_index - index;
+	/*y = abs(index - a->last_index);*/
 	/*between last element and index*/
-	z = a->size - index -1;
-
+	z = a->size - index - 1;
 	ret = choose_shortest_path(a, index, x, y, z);
 
 	a->last_used = ret;
@@ -179,13 +183,16 @@ static list_node* choose_shortest_path
 )
 {
 	list_node *ret;
+
 	if(x < y && x < z)
 	{
+		/* begining of the list */
 		ret = forward(a->head->next, 0, index);
 	}
-	else if(x < z && a->last_index >= 0)
+	else if(y < z && a->last_used)
 	{
-		if((index - a->last_index) > 0)
+		/*near the last index */
+		if(index > a->last_index)
 		{
 			ret = forward(a->last_used, a->last_index, index);
 		}
@@ -195,7 +202,8 @@ static list_node* choose_shortest_path
 		}
 	}
 	else
-	{
+	{ 
+		/* at the end of the list*/
 		ret = backward(a->tail->previous, a->size-1, index);
 	}
 	return ret;

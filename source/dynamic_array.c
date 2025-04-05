@@ -12,7 +12,7 @@ Darray *init_darray_with_length(unsigned int size)
 	Darray *a;
 	a = malloc(sizeof(Darray));
 	a->array = malloc(sizeof(void*) * size);
-	for(int i = 0; i < size; i++)
+	for(unsigned int i = 0; i < size; i++)
 	{
 		a->array[i] = NULL;
 	}
@@ -43,7 +43,8 @@ static bool check_darray_index(Darray *a, unsigned int index)
 
 void delete_darray(Darray *a, void (*free_element)(void *element))
 {
-	for(int i = 0; i < a->size; i++)
+	unsigned int i;
+	for(i = 0; i < a->size; i++)
 	{
 		free_element(a->array[i]);
 	}
@@ -53,7 +54,8 @@ void delete_darray(Darray *a, void (*free_element)(void *element))
 
 void darray_clear(Darray *a, void (*free_element)(void *element))
 {
-	for(int i = 0; i < a->size; i++)
+	unsigned int i;
+	for(i = 0; i < a->size; i++)
 	{
 		free_element(a->array[i]);
 		a->array[i] = NULL;
@@ -63,7 +65,7 @@ void darray_clear(Darray *a, void (*free_element)(void *element))
 
 bool darray_append(Darray *a, void *element)
 {
-	int end;
+	unsigned int end;
 	end = darray_find_emptiness(a);
 	if(end == a->capacity)
 		darray_expand(a);
@@ -118,12 +120,14 @@ void print_darray(Darray *a, void(*print_element)(void *element))
 static int darray_find_emptiness(Darray *a)
 {
 	unsigned int end;
-	for(end = a->capacity - 1; end >= 0; end--)
+	for(end = a->capacity - 1; end > 0; end--)
 	{
 		if(a->array[end])
 			break;
 	}
-	return ++end;
+	if(a->array[end])
+		return ++end;
+	return end;
 }
 static void darray_expand(Darray *a)
 {
