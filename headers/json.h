@@ -1,7 +1,7 @@
-#include "advanced_types.h"
-
 #ifndef JSON_H
 #define JSON_H
+
+#include "parsers.h"
 
 union json_val
 {

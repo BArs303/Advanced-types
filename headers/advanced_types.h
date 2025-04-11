@@ -31,12 +31,12 @@ typedef enum te Types;
 /*Library headers*/
 #include "dlinked_list.h"
 #include "dynamic_array.h"
-#include "json.h"
+#include "queue.h"
 #include "mystring.h"
 #include "red_black_tree.h"
 #include "rbt_set.h"
-#include "queue.h"
 #include "hmap.h"
+#include "parsers.h"
 
 void ptr_swap(void **a, void **b);
 void passive_destruct(void *element);

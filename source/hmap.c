@@ -41,7 +41,7 @@ void hmap_insert(HMap *a, const char *key, void *value)
 	unsigned int index;
 	node = init_hash_node(key, value);
 	index = hash_function(key);
-	printf("before hmap insert. index %u, capacity %d\n", index, a->array->capacity);
+	//printf("before hmap insert. index %u, capacity %d\n", index, a->array->capacity);
 	index = index % a->array->capacity;
 	values = darray_at_pos(a->array, index);
 	if(!values)
