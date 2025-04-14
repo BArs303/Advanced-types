@@ -22,5 +22,6 @@ struct hmap_node
 HMap* init_hmap();
 void hmap_insert(HMap *a, const char *key, void *element);
 void* hmap_get(HMap *a, const char *key);
+List* hmap_to_list(HMap *a);
 void print_hmap(HMap *a);
 #endif

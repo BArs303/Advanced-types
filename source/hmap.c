@@ -51,7 +51,7 @@ void hmap_insert(HMap *a, const char *key, void *value)
 	list_append(values, node);
 	darray_replace(a->array, values, index, &passive_destruct);
 
-	if(values->size > a->array->capacity / 2)
+	if(values->size > a->array->capacity / 10 * 2)
 	{
 		expand_hash_map(a);
 	}
@@ -140,3 +140,32 @@ static void print_hash_node(void *element)
 	printf("key %s value %d\n", node->key, *a);
 }
 
+List* hmap_to_list(HMap *a)
+{
+	unsigned int i, j;
+	Darray *values;
+	HNode *n;
+	List *result, *bucket;
+	if(a)
+	{
+		result = init_list();
+		values = a->array;
+		for(i = 0; i < values->capacity; i++)
+		{
+			bucket = darray_at_pos(values, i);
+			if(bucket)
+			{
+				for(j = 0; j < bucket->size; j++)
+				{
+					n = list_at_pos(bucket, j);
+					list_append(result, n);
+				}
+			}
+		}
+	}
+	else
+	{
+		result = NULL;
+	}
+	return result;
+}

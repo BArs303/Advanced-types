@@ -38,7 +38,7 @@ YAML* yaml_parse(char *str)
 	buffer->lengthcpy = 0;
 	buffer->level = 0;
 
-	parse_object(buffer);
+	result = parse_object(buffer);
 	return result;
 }
 
@@ -249,7 +249,7 @@ static YAML* parse_sequence(PData *buffer)
 		}
 		buffer->str += level * 2 + 2;
 		result = get_value(buffer);
-		printf("list value %s\n", result->value.literal);
+		/*printf("list value %s\n", result->value.literal);*/
 		list_append(values, result);
 	}
 	
@@ -261,14 +261,12 @@ static YAML* parse_object(PData *buffer)
 {
 	char *key;
 	YAML *field, *result;
-	int i;
 	unsigned int level;
 
 	result = malloc(sizeof(YAML));
 	result->value.object = init_hmap();
 	result->type = type_Object;
 
-	i = 0;
 	while(*(buffer->str) && buffer->error == 0)
 	{
 		level = get_current_level(buffer);
@@ -277,6 +275,7 @@ static YAML* parse_object(PData *buffer)
 
 		if(level != buffer->level)
 			break;
+
 		/* skip first identation spaces */
 		buffer->str += buffer->level * 2;
 
@@ -284,13 +283,10 @@ static YAML* parse_object(PData *buffer)
 		if(buffer->error)
 			return NULL;
 
-		if(buffer->level == 0)
-			i++;
-
-		printf("key %s level %u i %d\n", key, buffer->level, i);
+		/*if(i > 49570)
+			printf("near end\n");*/
+		/*printf("key %s level %u\n", key, buffer->level);*/
 		field = get_value(buffer);
-		field->key = key;
-
 		hmap_insert(result->value.object, key, field);
 	}
 	buffer->level--;

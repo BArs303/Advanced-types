@@ -14,7 +14,6 @@ union yaml_value
 
 struct yaml
 {
-	char *key;
 	union yaml_value value;
 	Types type;
 };

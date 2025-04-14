@@ -127,12 +127,15 @@ static JSON* parse_list(char **buffer)
 static JSON* parse_string(char **buffer)
 {
 	JSON *a;
-	int length;
-	const char *limiter = "\"";
+	unsigned int length;
 	a = malloc(sizeof(JSON));
 
 	(*buffer)++;/*skip first " symb*/
-	length = read_until(*buffer, limiter);
+	for(length = 0; (*buffer)[length] != '"'; length++)
+	{
+		if((*buffer)[length] == '\\')
+			length++;
+	}
 	a->value.string = copy_from_buffer(buffer, length);
 	(*buffer)++;/*skip last " symb*/
 	a->type = type_String;
@@ -288,33 +291,36 @@ char* json_stringify(JSON *a)
 static char* l_json_stringify(JSON *a, int level)
 {
 	char *ret = NULL;
-	switch(a->type)
+	if(a)
 	{
-		case type_String:
-		ret = stringify_string(a, level);
-		/*printf("String value %s\n", ret);*/
-		break;
+		switch(a->type)
+		{
+			case type_String:
+			ret = stringify_string(a, level);
+			/*printf("String value %s\n", ret);*/
+			break;
 
-		case type_Int:
-		ret = stringify_int(a, level);
-		/*printf("Int value %s\n", ret);*/
-		break;
+			case type_Int:
+			ret = stringify_int(a, level);
+			/*printf("Int value %s\n", ret);*/
+			break;
 
-		case type_Object:
-		ret = stringify_object(a, level);
-		/*printf("Object value %s\n", ret);*/
-		break;
+			case type_Object:
+			ret = stringify_object(a, level);
+			/*printf("Object value %s\n", ret);*/
+			break;
 
-		case type_List:
-		ret = stringify_list(a, level);
-		/*printf("List value %s\n", ret);*/
-		break;
+			case type_List:
+			ret = stringify_list(a, level);
+			/*printf("List value %s\n", ret);*/
+			break;
 
-		case type_Bool:
-		ret = stringify_bool(a, level);
-		/*printf("Bool value %s\n", ret);*/
-		break;
-		default:;
+			case type_Bool:
+			ret = stringify_bool(a, level);
+			/*printf("Bool value %s\n", ret);*/
+			break;
+			default:;
+		}
 	}
 	return ret;
 }
@@ -386,10 +392,35 @@ static char* stringify_bool(JSON *a, int level)
 
 static char* stringify_string(JSON *a, int level)
 {
-	char *result;
+	char *result, *tmp;
+	unsigned int i, j, length;
 	result = process_key(a, level);
 	result = concat(result, " \"");
-	result = concat(result, a->value.string);
+
+	for(i = 0, length = 0; a->value.string[i]; i++, length++)
+	{
+		if(a->value.string[i] == '"')
+			length++;
+	}
+	if(i != length)
+	{
+		tmp = malloc(sizeof(char) * (length + 1));
+		for(i = 0, j = 0; a->value.string[i]; i++, j++)
+		{
+			if(a->value.string[i] == '"')
+			{
+				tmp[j] = '\\';
+				j++;
+			}
+			tmp[j] = a->value.string[i];
+		}
+		tmp[length] = 0;
+		result = concat(result, tmp);
+	}
+	else
+	{
+		result = concat(result, a->value.string);
+	}
 	result = concat(result,"\"");
 	return result;
 }
