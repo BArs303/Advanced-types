@@ -3,7 +3,6 @@
 static char* get_key(char **buffer);
 static JSON* get_value(char **buffer);
 
-static int read_until(char *str, const char *limiters);
 static char* copy_from_buffer(char **buffer, int length);
 static void skip_whitespaces(char **buffer, bool (*is_whitespace)(char c));
 static bool default_whitespaces(char c);
@@ -196,19 +195,6 @@ static char* get_key(char **buffer)
 	key = copy_from_buffer(buffer, length);
 	(*buffer)++;/*skip last " symb*/
 	return key;
-}
-
-static int read_until(char *str, const char *limiters)
-{
-	for(int i = 0; str[i]; i++)
-	{
-		for(int j = 0; limiters[j]; j++)
-		{
-			if(str[i] == limiters[j])
-				return i;
-		}
-	}
-	return -1;
 }
 
 static char* copy_from_buffer(char **buffer, int length)

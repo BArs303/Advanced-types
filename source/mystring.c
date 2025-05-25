@@ -6,17 +6,20 @@ char* file_to_str(const char *fn)
 {
 	FILE *ifs;
 	int length;
-	char *str = NULL;
+	char *str;
 	ifs = fopen(fn, "rb");
-	if(ifs)
+	if(!ifs)
 	{
-		fseek(ifs, 0, SEEK_END);
-		length = ftell(ifs);
-		fseek(ifs, 0, SEEK_SET);
-		str = malloc(sizeof(char) * length);
-		fread(str, sizeof(char), length, ifs);
-		fclose(ifs);
+		fprintf(stderr, "Can't open the file");
+		return NULL;
 	}
+	fseek(ifs, 0, SEEK_END);
+	length = ftell(ifs);
+	fseek(ifs, 0, SEEK_SET);
+	str = malloc(sizeof(char) * (length + 1));
+	fread(str, sizeof(char), length, ifs);
+	str[length] = 0;
+	fclose(ifs);
 	return str;
 }
 
@@ -91,9 +94,91 @@ char *int_to_str(int num)
 
 char* concat(char *dest, const char *src)
 {
-	int length;
+	size_t length;
 	length = strlen(dest) + strlen(src);
 	dest = realloc(dest, sizeof(char) * (length+1));
 	strcat(dest, src);
 	return dest;
+}
+
+bool is_whitespace(char c, const char *whitespaces)
+{
+	size_t i;
+	for(i = 0; whitespaces[i]; i++)
+	{
+		if(c == whitespaces[i])
+			return true;
+	}
+	return false;
+}
+
+unsigned int word_counter(const char *str, char separator)
+{
+	/*prev - is previous char whitespace*/
+	bool wsp, prev;
+	size_t i;
+	unsigned int n;
+	prev = false;
+	for(i = 0, n = 0; str[i]; i++)
+	{
+		wsp = (str[i] == separator);
+		if(wsp)
+		{
+			if(prev)
+			{
+				n++;
+				prev = false;
+			}
+		}
+		else
+		{
+			prev = true;
+		}
+	}
+	if(prev)
+		n++;
+	return n;
+}
+
+size_t read_until(const char *str, const char *limeters)
+{
+	size_t i;
+	for(i = 0; str[i]; i++)
+	{
+		if(is_whitespace(str[i], limeters))
+			break;
+	}
+	return i;
+}
+
+char** mysplit(const char *str, char separator, unsigned int *return_size)
+{
+	char **result;
+	char *str_separator;
+	size_t word_length, i;
+	unsigned int n, j;
+	n = word_counter(str, separator);
+	/*printf("words count in split %d\nstring length %d\n", n, strlen(str));*/
+	result = malloc(sizeof(char*)*n);
+
+	str_separator = malloc(sizeof(char) * 2);
+	str_separator[0] = separator;
+	str_separator[1] = 0;
+
+	for(i = 0, j = 0; j < n; i++)
+	{
+		/*printf("%c %d\n", str[i], str[i]);*/
+		if(str[i] != separator)
+		{
+			word_length = read_until(str+i, str_separator);
+			result[j] = malloc(sizeof(char) * (word_length+1));
+			/*printf("end of string %s\ni %d\nword length %d\n", str+i, i, length);*/
+			strncpy(result[j], str+i, word_length);
+			result[j][word_length] = 0;
+			i += word_length;
+			j++;
+		}
+	}
+	*return_size = n;
+	return result;
 }

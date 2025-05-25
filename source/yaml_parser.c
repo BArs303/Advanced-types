@@ -44,10 +44,9 @@ YAML* yaml_parse(char *str)
 
 static char* get_key(PData *buffer)
 {
-	char *key, *limiters;
+	char *key;
 	unsigned int i;
 
-	limiters = ":\n";
 	key = NULL;
 
 	for(i = 0; buffer->str[i] != ':'; i++)

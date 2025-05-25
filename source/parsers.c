@@ -1,7 +1,5 @@
 #include "parsers.h"
 
-static bool is_whitespace(char c, const char *whitespaces);
-
 unsigned int yskip_whitespaces(PData *buffer, const char *whitespaces)
 {
 	char *position;
@@ -38,15 +36,4 @@ unsigned int yread_until(char *str, const char *limiters)
 		}
 	}
 	return 0;
-}
-
-static bool is_whitespace(char c, const char *whitespaces)
-{
-	int i;
-	for(i = 0; whitespaces[i]; i++)
-	{
-		if(c == whitespaces[i])
-			return true;
-	}
-	return false;
 }
