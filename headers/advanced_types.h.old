@@ -29,17 +29,14 @@ enum te
 typedef enum te Types;
 
 /*Library headers*/
-#include "dlinked_list.h"
+/*#include "dlinked_list.h"
 #include "dynamic_array.h"
 #include "queue.h"
 #include "mystring.h"
 #include "red_black_tree.h"
-#include "rbt_set.h"
 #include "hmap.h"
-#include "parsers.h"
+#include "parsers.h"*/
 
-void ptr_swap(void **a, void **b);
-void passive_destruct(void *element);
-//#include "set.h" replaced
+#include "mystring.h"
 
 #endif

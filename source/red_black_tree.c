@@ -2,6 +2,7 @@
 
 static RB_Node* rbt_max(RB_Node *root);
 static void swap_node_colors(RB_Node *a, RB_Node *b);
+
 static RB_Node* rotate_node
 (
 	struct red_black_tree *a,
@@ -21,8 +22,8 @@ static void fixup
 	RBT *a,
 	RB_Node *x
 );
-static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
 
+static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
 static int rbt_cn(RB_Node *a);
 static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element));
 
@@ -432,7 +433,6 @@ void rbt_delete
 	return;
 }
 
-/*Temporary functions*/
 int rbt_count_nodes(RBT *a)
 {
 	if(!a->root)

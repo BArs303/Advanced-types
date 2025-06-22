@@ -1,4 +1,4 @@
-#include "yaml_parser.h"
+#include "yaml.h"
 
 /*
 	char * - read only
@@ -35,7 +35,6 @@ YAML* yaml_parse(char *str)
 	buffer = malloc(sizeof(PData));
 	buffer->str = str;
 	buffer->error = 0;
-	buffer->lengthcpy = 0;
 	buffer->level = 0;
 
 	result = parse_object(buffer);
@@ -58,8 +57,7 @@ static char* get_key(PData *buffer)
 		}
 	}
 
-	buffer->lengthcpy = i;
-	key = ycut_from_buffer(buffer);
+	key = cut_from_buffer(buffer, i);
 	/* skip : symb */
 	buffer->str++;
 
@@ -69,7 +67,7 @@ static char* get_key(PData *buffer)
 static YAML* get_value(PData *buffer)
 {
 	YAML *ret;
-	yskip_whitespaces(buffer, " ");
+	skip_whitespaces(buffer, " ");
 	switch(*(buffer->str))
 	{
 		case '\n':
@@ -89,7 +87,6 @@ static YAML* parse_string(PData *buffer)
 	char quote;
 
 	ret = malloc(sizeof(YAML));
-	buffer->lengthcpy = 0;
 
 	if(*(buffer->str) == '\'' || *(buffer->str) == '"')
 	{
@@ -116,8 +113,7 @@ static YAML* parse_string(PData *buffer)
 		}
 		/* skip end quote */
 		buffer->str++;
-		buffer->lengthcpy = length;
-		result = ycut_from_buffer(buffer);
+		result = cut_from_buffer(buffer, length);
 	}
 	else
 	{
@@ -154,7 +150,7 @@ static YAML* parse_string(PData *buffer)
 	/* skip \n */
 	buffer->str++;
 	ret->value.literal = result;
-	ret->type = type_String;
+	ret->type = type_string;
 
 	/*printf("string value: %s\n", ret->value.literal);*/
 	return ret;
@@ -226,7 +222,7 @@ static YAML* parse_sequence(PData *buffer)
 		{
 			buffer->error = 0;
 			result = malloc(sizeof(YAML));
-			result->type = type_List;
+			result->type = type_list;
 			result->value.sequence = values;
 			return result;
 		}
@@ -264,7 +260,7 @@ static YAML* parse_object(PData *buffer)
 
 	result = malloc(sizeof(YAML));
 	result->value.object = init_hmap();
-	result->type = type_Object;
+	result->type = type_object;
 
 	while(*(buffer->str) && buffer->error == 0)
 	{

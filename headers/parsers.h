@@ -1,23 +1,33 @@
 #ifndef PARSERS_H
 #define PARSERS_H
 
-#include "advanced_types.h"
-#include "json.h"
-#include "yaml_parser.h"
-
+#include "dlinked_list.h"
+#include "hmap.h"
 
 struct parsable_data
 {
 	char *str;
 	int error;
-	unsigned int lengthcpy;
 	unsigned int level;
 };
 
+enum te
+{
+	type_object,
+	type_list,
+	type_bool,
+	type_darray,
+	type_number,
+	type_string
+};
+
+typedef enum te Types;
 typedef struct parsable_data PData;
 
-char* ycut_from_buffer(PData *buffer);
-unsigned int yskip_whitespaces(PData *buffer, const char *whitespaces);
-unsigned int yread_until(char *str, const char *limiters);
+extern const char default_whitespaces[];
+
+char* cut_from_buffer(PData *buffer, size_t length);
+size_t skip_whitespaces(PData *buffer, const char *whitespaces);
+char* my_concat(char *dst, const char *src);
 
 #endif

@@ -76,19 +76,29 @@ void list_insert(List *a, void *element, unsigned int index)
 	{
 		list_insert_between(a, element, index);
 	}
-	return;
-}
-
-void print_list(List *a, void (*print_element)(void *element))
-{
-	list_node *i;
-	for(i = a->head->next; i->next; i = i->next)
+	else
 	{
-		print_element(i->data);
+		perror("Invalid index in list\n");
 	}
 	return;
 }
 
+void print_list
+(
+	List *a,
+	void (*print_element)(void *element, void *params),
+	void *parameters
+)
+{
+	list_node *i;
+	for(i = a->head->next; i->next; i = i->next)
+	{
+		print_element(i->data, parameters);
+	}
+	return;
+}
+
+#ifdef DEBUG
 void debug_print_list(List *a)
 {
 	list_node *i;
@@ -106,6 +116,7 @@ void debug_print_list(List *a)
 	}
 	printf("End of List\n");
 }
+#endif
 
 void* list_at_pos(List *a, unsigned int index)
 {
@@ -119,30 +130,44 @@ void* list_at_pos(List *a, unsigned int index)
 	return ret;
 }
 
-void list_delete(List *a, unsigned int index, void (*free_element)(void *element))
+bool list_delete
+(
+	List *a,
+	unsigned int index,
+	void (*free_element)(void *element, void *params),
+	void *parameters
+)
 {
 	list_node *deleted;
 	if(!check_list_index(a, index))
-		return;
+		return false;
 
 	deleted = get_node_at_index(a, index);
 	deleted->previous->next = deleted->next;
 	deleted->next->previous = deleted->previous;
 	a->size--;
-	free_element(deleted->data);
+	free_element(deleted->data, parameters);
 	free(deleted);
 
-	a->last_used = NULL;
-	a->last_index = -1;
-	return;
+	if(a->last_index == index)
+	{
+		a->last_used = NULL;
+		a->last_index = 0;
+	}
+	return true;
 }
 
-void delete_list(List *a, void (*free_element)(void *element))
+void delete_list
+(
+	List *a,
+	void (*free_element)(void *element, void *params),
+	void *parameters
+)
 {
 	list_node *tmp;
 	for(tmp = a->head->next; tmp->next; tmp = tmp->next)
 	{
-		free_element(tmp->data);
+		free_element(tmp->data, parameters);
 		free(tmp->previous);
 	}
 	/*free last elements*/

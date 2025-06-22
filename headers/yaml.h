@@ -17,6 +17,7 @@ struct yaml
 	union yaml_value value;
 	Types type;
 };
+extern const char default_whitespaces[];
 
 YAML* yaml_parse_file(const char *filename);
 YAML* yaml_parse(char *str);

@@ -1,12 +1,12 @@
-#include "advanced_types.h"
-
 #ifndef RED_BLACK_TREE_H
 #define RED_BLACK_TREE_H
 
 #define LEFT 0
 #define RIGHT 1
-
 #define NODE_DIRECTION(n) ((n->parent)->child[RIGHT] == n ? RIGHT:LEFT)
+
+
+#include "utility.h"
 
 typedef struct red_black_node RB_Node;
 typedef struct red_black_tree RBT;
@@ -63,4 +63,5 @@ void print_rbt(RBT *a, void (*print_tree)(void *element));
 void debug_print_rbt(RB_Node *a, void (*print_tree)(void *element));
 
 int rbt_count_nodes(RBT *a);
+
 #endif

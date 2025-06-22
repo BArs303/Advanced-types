@@ -1,6 +1,8 @@
-#include "rbt_set.h"
+#include "set.h"
 
+#if 0
 static void stol(RB_Node *a, List *b);
+#endif
 
 Set* init_set()
 {
@@ -54,6 +56,7 @@ void delete_set(Set *a, void (*free_element)(void *element))
 	delete_rbt(a, free_element);
 }
 
+#if 0
 List* set_to_list(Set *a)
 {
 	List *b;
@@ -72,3 +75,5 @@ static void stol(RB_Node *a, List *b)
 	}
 	return;
 }
+
+#endif

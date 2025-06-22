@@ -9,9 +9,10 @@ union json_val
 	float fnumber;
 	char *string;
 	List *list;
-	List *object; /*need to replace with normal data type*/
-	bool jbool;
+	HMap *object;
+	bool jsbool;
 };
+
 typedef union json_val JSON_value;
 
 struct json
@@ -21,9 +22,10 @@ struct json
 	Types type;
 };
 typedef struct json JSON;
+extern const char default_whitespaces[];
 
 JSON* json_parse(char *str);
 JSON* json_parse_file(const char *filename);
 char* json_stringify(JSON *a);
-void delete_json(void *a);
+void delete_json(void *element, void *params);
 #endif

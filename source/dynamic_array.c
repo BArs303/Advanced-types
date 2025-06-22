@@ -8,13 +8,12 @@ static bool check_darray_index(Darray *a, unsigned int index);
 Darray *init_darray_with_length(unsigned int size)
 {
 	Darray *a;
-	size_t bytes_num;
 
-	bytes_num = size * sizeof(void*);
 	a = malloc(sizeof(Darray));
-	a->array = malloc(bytes_num);
-	memset(a->array, 0, bytes_num);
-	a->size = size;
+	a->array = malloc(sizeof(void*)*size);
+	memset(a->array, 0, size);
+	a->size = 0;
+	a->capacity = size;
 	return a;
 }
 
@@ -33,52 +32,72 @@ void* darray_at_pos(Darray *a, unsigned int index)
 }
 static bool check_darray_index(Darray *a, unsigned int index)
 {
-	if(index >= 0 && index < a->size)
-		return true;
-	return false;
+	//unsigned int index always >= 0
+	return index < a->capacity;
 }
 
-void delete_darray(Darray *a, void (*free_element)(void *element))
+void delete_darray
+(
+	Darray *a,
+	void (*free_element)(void *element, void *params),
+	void *parameters
+)
 {
 	unsigned int i;
 	for(i = 0; i < a->size; i++)
 	{
-		free_element(a->array[i]);
+		free_element(a->array[i], parameters);
 	}
 	free(a->array);
 	free(a);
 	return;
 }
 
-void darray_clear(Darray *a, void (*free_element)(void *element))
+void darray_clear(Darray *a, void (*free_element)(void *element, void *params), void *params)
 {
 	unsigned int i;
 	for(i = 0; i < a->size; i++)
 	{
-		free_element(a->array[i]);
+		free_element(a->array[i], params);
 		a->array[i] = NULL;
 	}
+	a->size = 0;
 	return;
 }
 
 bool darray_insert(Darray *a, void *element, unsigned int index)
 {
-	if(check_darray_index(a, index) || a->size == index)
-	{
+	bool result;
+	if(index == a->capacity)
 		darray_expand(a);
+
+	if(check_darray_index(a, index))
+	{
 		shift_right(a, index);
 		a->array[index] = element;
-		return true;
+		if(index + 1 > a->size)
+			a->size = index + 1;
+		result = true;
 	}
-	perror("Darray invalid index\n");
-	return false;
+	else
+	{
+		result = false;
+		perror("Darray invalid index\n");
+	}
+	return result;
 }
 
-bool darray_delete(Darray *a, unsigned int index, void (*free_element)(void *element))
+bool darray_delete
+(
+	Darray *a,
+	unsigned int index,
+	void (*free_element)(void *element, void *params),
+	void *parameters
+)
 {
 	if(check_darray_index(a, index))
 	{
-		free_element(a->array[index]);
+		free_element(a->array[index], parameters);
 		shift_left(a, index);
 		a->size--;
 		return true;
@@ -87,7 +106,12 @@ bool darray_delete(Darray *a, unsigned int index, void (*free_element)(void *ele
 	return false;
 }
 
-void print_darray(Darray *a, void(*print_element)(void *element))
+void print_darray
+(
+	Darray *a,
+	void (*print_element)(void *element, void *params),
+	void *parameters
+)
 {
 	unsigned int i;
 	for(i = 0; i < a->size; i++)
@@ -95,44 +119,47 @@ void print_darray(Darray *a, void(*print_element)(void *element))
 		printf("darray index: %d\n", i);
 		if(a->array[i]) //if element exists
 		{
-			print_element(a->array[i]);
+			print_element(a->array[i], parameters);
 		}
 	}
-	return;
 }
 
 static void darray_expand(Darray *a)
 {
-	a->array = realloc(a->array, sizeof(void*) * (a->size + DEFAULT_STEP_SIZE));
-	a->size += DEFAULT_STEP_SIZE;
-	return;
+	a->array = realloc(a->array, sizeof(void*) * (a->capacity + DEFAULT_DARRAY_STEP_SIZE));
+	a->capacity += DEFAULT_DARRAY_STEP_SIZE;
 }
 
 static void shift_right(Darray *a, unsigned int begin)
 {
 	unsigned int i;
-	for(i = a->size - 1; i > begin; i--)
+	for(i = a->size; i > begin; i--)
 	{
 		a->array[i] = a->array[i-1];
 	}
-	return;
 }
 
 static void shift_left(Darray *a, unsigned int index)
 {
 	unsigned int i;
-	for(i = index; i < a->size-1; i++)
+	for(i = index; i < a->size - 1; i++)
 	{
 		a->array[i] = a->array[i+1];
 	}
-	return;
 }
 
-bool darray_replace(Darray *a, void *new_element, unsigned int index, void(*free_element)(void *element))
+bool darray_replace
+(
+	Darray *a,
+	void *new_element,
+	unsigned int index,
+	void (*free_element)(void *element, void *params),
+	void *parameters
+)
 {
 	if(check_darray_index(a, index))
 	{
-		free_element(a->array[index]);
+		free_element(a->array[index], parameters);
 		a->array[index] = new_element;
 		return true;
 	}

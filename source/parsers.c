@@ -1,6 +1,7 @@
 #include "parsers.h"
 
-unsigned int yskip_whitespaces(PData *buffer, const char *whitespaces)
+const char default_whitespaces[] = {' ', '\n', '\t'};
+size_t skip_whitespaces(PData *buffer, const char *whitespaces)
 {
 	char *position;
 	position = buffer->str;
@@ -11,29 +12,22 @@ unsigned int yskip_whitespaces(PData *buffer, const char *whitespaces)
 	return buffer->str - position;
 }
 
-char* ycut_from_buffer(PData *buffer)
+char* cut_from_buffer(PData *buffer, size_t length)
 {
-	int i;
-	char *str;
-	str = malloc(sizeof(char) * buffer->lengthcpy + 1);
-	for(i = 0; i < buffer->lengthcpy; i++, buffer->str++)
+	size_t i;
+	char *ret;
+	ret = malloc(sizeof(char) * (length + 1));
+	for(i = 0; i < length; i++, buffer->str++)
 	{
-		str[i] = *buffer->str;
+		ret[i] = *buffer->str;
 	}
-	str[buffer->lengthcpy] = 0;
-	return str;
+	ret[length] = 0;
+	return ret;
 }
 
-unsigned int yread_until(char *str, const char *limiters)
+char* my_concat(char *dst, const char *src)
 {
-	int i, j;
-	for(i = 0; str[i]; i++)
-	{
-		for(j = 0; limiters[j]; j++)
-		{
-			if(str[i] == limiters[j])
-				return i;
-		}
-	}
-	return 0;
+	dst = realloc(dst, strlen(dst) + strlen(src) + 1);
+	strcat(dst, src); 
+	return dst;
 }
