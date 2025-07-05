@@ -167,7 +167,10 @@ void delete_list
 	list_node *tmp;
 	for(tmp = a->head->next; tmp->next; tmp = tmp->next)
 	{
-		free_element(tmp->data, parameters);
+		if(tmp->data)
+		{
+			free_element(tmp->data, parameters);
+		}
 		free(tmp->previous);
 	}
 	/*free last elements*/

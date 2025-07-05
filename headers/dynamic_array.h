@@ -27,6 +27,7 @@ void delete_darray
 
 void darray_clear(Darray *a, void(*free_element)(void *element, void *parameters), void *parameters);
 bool darray_insert(Darray *a, void *element, unsigned int index);
+bool darray_append(Darray *a, void *element);
 bool darray_delete
 (
 	Darray *a,

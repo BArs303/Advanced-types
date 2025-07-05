@@ -46,7 +46,10 @@ void delete_darray
 	unsigned int i;
 	for(i = 0; i < a->size; i++)
 	{
-		free_element(a->array[i], parameters);
+		if(a->array[i])
+		{
+			free_element(a->array[i], parameters);
+		}
 	}
 	free(a->array);
 	free(a);
@@ -68,7 +71,7 @@ bool darray_append(Darray *a, void *element)
 {
 	if(a->size == a->capacity)
 		darray_expand(a);
-	return darray_insert(a, element, a->size - 1);
+	return darray_insert(a, element, a->size);
 }
 
 bool darray_insert(Darray *a, void *element, unsigned int index)
@@ -86,7 +89,7 @@ bool darray_insert(Darray *a, void *element, unsigned int index)
 	else
 	{
 		result = false;
-		perror("Darray invalid index\n");
+		fprintf(stderr,"Darray invalid index %u\n", index);
 	}
 	return result;
 }
@@ -105,7 +108,7 @@ bool darray_delete
 		shift_left(a, index, 1);
 		return true;
 	}
-	perror("Darray invalid index\n");
+	fprintf(stderr,"Darray invalid index %u\n", index);
 	return false;
 }
 
