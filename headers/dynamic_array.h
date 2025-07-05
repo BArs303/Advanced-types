@@ -51,5 +51,7 @@ bool darray_replace
 	void(*free_element)(void *element, void *params),
 	void *paremeters
 );
+bool darray_shift_left(Darray *array, unsigned int index, unsigned int offset);
+bool darray_shift_rigth(Darray *array, unsigned int start, unsigned int offset);
 
 #endif

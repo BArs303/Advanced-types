@@ -23,9 +23,9 @@ static void fixup
 	RB_Node *x
 );
 
-static void inner_print_tree(RB_Node *a, void (*print_element)(void *element));
+static void inner_print_tree(RB_Node *a, void (*print_element)(void *element, void *params), void *params);
 static int rbt_cn(RB_Node *a);
-static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element));
+static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element, void *params), void *params);
 
 RB_Node* create_red_black_node(void *data)
 {
@@ -221,36 +221,46 @@ static RB_Node* rbt_max(RB_Node *root)
 	return root;
 }
 
-void print_rbt(RBT *a, void (*print_element)(void *element))
+void print_rbt(RBT *a, void (*print_element)(void *element, void *params), void *params)
 {
-	inner_print_tree(a->root, print_element);
+	inner_print_tree(a->root, print_element, params);
 }
-static void inner_print_tree(RB_Node *a, void (*print_element)(void *element))
+static void inner_print_tree
+(
+	RB_Node *a,
+	void (*print_element)(void *element, void *params),
+	void *params
+)
 {
 	if(a)
 	{
-		inner_print_tree(a->child[LEFT], print_element);
-		print_element(a->data);
-		inner_print_tree(a->child[RIGHT], print_element);
+		inner_print_tree(a->child[LEFT], print_element, params);
+		print_element(a->data, params);
+		inner_print_tree(a->child[RIGHT], print_element, params);
 	}
 }
 
 
-void debug_print_rbt(RB_Node *a, void (*print_element)(void *element))
+void debug_print_rbt
+(
+	RB_Node *a,
+	void (*print_element)(void *element, void *params),
+	void *params
+)
 {
 	if(a)
 	{
 		printf("value: ");
-		print_element(a->data);
+		print_element(a->data, params);
 		printf("color: ");
 		if(a->color == RED)
 			printf("Red\n");
 		else
 			printf("Black\n");
 		printf("address %p\nparent %p\nleft child\n", a, a->parent);
-		debug_print_rbt(a->child[LEFT], print_element);
+		debug_print_rbt(a->child[LEFT], print_element, params);
 		printf("right child\n");
-		debug_print_rbt(a->child[RIGHT], print_element);
+		debug_print_rbt(a->child[RIGHT], print_element, params);
 	}
 	else
 		printf("nil\n");
@@ -358,24 +368,34 @@ case_32:
 
 }
 
-void delete_rbt(RBT *a, void (*free_element)(void *element))
+void delete_rbt
+(
+	RBT *a,
+	void (*free_element)(void *element, void *params),
+	void *params
+)
 {
 	if(a)
 	{
-		delete_rbt_node(a->root, free_element);
+		delete_rbt_node(a->root, free_element, params);
 		free(a);
 	}
 }
 
-static void delete_rbt_node(RB_Node *a, void (*free_element)(void *element))
+static void delete_rbt_node
+(
+	RB_Node *a,
+	void (*free_element)(void *element, void *params),
+	void *params
+)
 {
 	if(a)
 	{
 		if(a->child[LEFT])
-			delete_rbt_node(a->child[LEFT], free_element);
+			delete_rbt_node(a->child[LEFT], free_element, params);
 		if(a->child[RIGHT])
-			delete_rbt_node(a->child[RIGHT], free_element);
-		free_element(a->data);
+			delete_rbt_node(a->child[RIGHT], free_element, params);
+		free_element(a->data, params);
 		free(a);
 	}
 }
@@ -384,7 +404,8 @@ void rbt_delete
 (
 	RBT *a,
 	RB_Node *x,
-	void (*free_element)(void *element)
+	void (*free_element)(void *element, void *params),
+	void *params
 )
 {
 	RB_Node *p, *w, *c;
@@ -401,7 +422,7 @@ void rbt_delete
 		//it will always have maximum 1 child
 		w = rbt_max(x->child[LEFT]);
 		ptr_swap(&(x->data), &(w->data));
-		rbt_delete(a, w, free_element);
+		rbt_delete(a, w, free_element, params);
 		return;
 	}
 	else if(x->child[LEFT])
@@ -424,12 +445,12 @@ void rbt_delete
 		}
 		else
 			fixup(a, x);
-		free_element(x->data);
+		free_element(x->data, params);
 		free(x);
 		return;
 	}
 	ptr_swap(&(x->data), &(c->data));
-	rbt_delete(a, c, free_element);
+	rbt_delete(a, c, free_element, params);
 	return;
 }
 

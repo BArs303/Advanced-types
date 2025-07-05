@@ -17,7 +17,6 @@ typedef union json_val JSON_value;
 
 struct json
 {
-	char *key;
 	JSON_value value;
 	Types type;
 };

@@ -1,6 +1,7 @@
 #include "parsers.h"
 
 const char default_whitespaces[] = {' ', '\n', '\t'};
+
 size_t skip_whitespaces(PData *buffer, const char *whitespaces)
 {
 	char *position;

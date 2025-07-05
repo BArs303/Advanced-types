@@ -10,6 +10,7 @@ static void print_hash_node(void *element, void *params);
 static void delete_bucket(void *element, void *parameters);
 static void delete_hnode(void *element, void *parameters);
 
+
 HMap* init_hmap()
 {
 	HMap *a;
@@ -69,16 +70,16 @@ void hmap_insert(HMap *a, char *key, void *value)
 	node = init_hash_node(key, value);
 	index = hash_function(key);
 	//printf("before hmap insert. index %u, capacity %d\n", index, a->array->capacity);
-	index = index % a->array->size;
+	index = index % a->array->capacity;
 	values = darray_at_pos(a->array, index);
 	if(!values)
 	{
 		values = init_list();
+		darray_insert(a->array, values, index);
 	}
 	list_append(values, node);
-	darray_replace(a->array, values, index, &passive_destruct, NULL);
 
-	if(values->size > a->array->size/ 10 * 2)
+	if(values->size > a->array->capacity/ 10 * 2)
 	{
 		expand_hash_map(a);
 	}
@@ -94,7 +95,7 @@ static void expand_hash_map(HMap *a)
 	int step = 2;
 
 	old_array = a->array;
-	new_array = init_darray_with_length(old_array->size* step);
+	new_array = init_darray_with_length(old_array->capacity * step);
 
 	for(int i = 0; i < old_array->size; i++)
 	{
@@ -105,15 +106,15 @@ static void expand_hash_map(HMap *a)
 		{
 			node = list_at_pos(old_values, j);
 
-			index = hash_function(node->key) % new_array->size;
+			index = hash_function(node->key) % new_array->capacity;
 			new_values = darray_at_pos(new_array, index);
 			if(!new_values)
 			{
 				new_values = init_list();
+				darray_insert(new_array, new_values, index);
 			}
 
 			list_append(new_values, node);
-			darray_replace(new_array, new_values, index, &passive_destruct, NULL);
 		}
 		//all nodes are copied to the new array,
 		//so delete function is not required
@@ -131,7 +132,7 @@ void* hmap_get(HMap *a, const char *key)
 	List *values;
 	unsigned int index;
 
-	index = hash_function(key) % a->array->size;
+	index = hash_function(key) % a->array->capacity;
 	values = darray_at_pos(a->array, index);
 	if(values)
 	{

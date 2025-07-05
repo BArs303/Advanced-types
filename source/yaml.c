@@ -275,6 +275,8 @@ static YAML* parse_object(PData *buffer)
 		buffer->str += buffer->level * 2;
 
 		key = get_key(buffer);
+		/*if(level == 0)
+			printf("yaml key %s\n", key);*/
 		if(buffer->error)
 			return NULL;
 

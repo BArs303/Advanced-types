@@ -30,20 +30,23 @@ struct red_black_tree
 	RB_Node *root;
 };
 
-//Functions
-RB_Node* rbt_find_node(
+/*-----Functions-----*/
+RB_Node* rbt_find_node
+(
 	RB_Node *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2),
 	int *cmp_result
 );
-RB_Node* rbt_insert(
+RB_Node* rbt_insert
+(
 	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2)
 );
 
-RB_Node* s_rbt_insert(
+RB_Node* s_rbt_insert
+(
 	struct red_black_tree *root,
 	void *element,
 	int (*compare)(void *arg1, void *arg2),
@@ -53,14 +56,30 @@ void rbt_delete
 (
 	struct red_black_tree *root,
 	RB_Node *element,
-	void (*free_element)(void *element)
+	void (*free_element)(void *element, void *parameters),
+	void *parameters
 );
-void delete_rbt(RBT *a, void (*free_element)(void *element));
+void delete_rbt(
+	RBT *a,
+	void (*free_element)(void *element, void *parameters),
+	void *parameters
+);
 
 RB_Node* create_node(void *data);
 
-void print_rbt(RBT *a, void (*print_tree)(void *element));
-void debug_print_rbt(RB_Node *a, void (*print_tree)(void *element));
+void print_rbt
+(
+	RBT *a,
+	void (*print_tree)(void *element, void *parameters),
+	void *parameters
+);
+
+void debug_print_rbt
+(
+	RB_Node *a,
+	void (*print_tree)(void *element, void *parameters),
+	void *parameters
+);
 
 int rbt_count_nodes(RBT *a);
 

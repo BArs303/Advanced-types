@@ -1,8 +1,8 @@
 #include "dynamic_array.h"
 
 static void darray_expand(Darray *a);
-static void shift_right(Darray *a, unsigned int begin);
-static void shift_left(Darray *a, unsigned int index);
+static void shift_right(Darray *a, unsigned int begin, unsigned int offset);
+static void shift_left(Darray *a, unsigned int index, unsigned int offset);
 static bool check_darray_index(Darray *a, unsigned int index);
 
 Darray *init_darray_with_length(unsigned int size)
@@ -11,7 +11,7 @@ Darray *init_darray_with_length(unsigned int size)
 
 	a = malloc(sizeof(Darray));
 	a->array = malloc(sizeof(void*)*size);
-	memset(a->array, 0, size);
+	memset(a->array, 0, sizeof(void*) * size);
 	a->size = 0;
 	a->capacity = size;
 	return a;
@@ -64,19 +64,23 @@ void darray_clear(Darray *a, void (*free_element)(void *element, void *params), 
 	a->size = 0;
 	return;
 }
+bool darray_append(Darray *a, void *element)
+{
+	if(a->size == a->capacity)
+		darray_expand(a);
+	return darray_insert(a, element, a->size - 1);
+}
 
 bool darray_insert(Darray *a, void *element, unsigned int index)
 {
 	bool result;
-	if(index == a->capacity)
-		darray_expand(a);
 
 	if(check_darray_index(a, index))
 	{
-		shift_right(a, index);
 		a->array[index] = element;
-		if(index + 1 > a->size)
-			a->size = index + 1;
+		index++;
+		if(index > a->size)
+			a->size = index;
 		result = true;
 	}
 	else
@@ -98,8 +102,7 @@ bool darray_delete
 	if(check_darray_index(a, index))
 	{
 		free_element(a->array[index], parameters);
-		shift_left(a, index);
-		a->size--;
+		shift_left(a, index, 1);
 		return true;
 	}
 	perror("Darray invalid index\n");
@@ -130,22 +133,43 @@ static void darray_expand(Darray *a)
 	a->capacity += DEFAULT_DARRAY_STEP_SIZE;
 }
 
-static void shift_right(Darray *a, unsigned int begin)
+static void shift_right(Darray *a, unsigned int start, unsigned int offset)
 {
 	unsigned int i;
-	for(i = a->size; i > begin; i--)
+	for(i = a->size + offset - 1; i > start + offset; i--)
 	{
-		a->array[i] = a->array[i-1];
+		a->array[i] = a->array[i-offset];
 	}
 }
 
-static void shift_left(Darray *a, unsigned int index)
+bool darray_shift_right(Darray *a, unsigned int start, unsigned int offset)
+{
+	if(check_darray_index(a, a->size + offset) && check_darray_index(a, start))
+	{
+		shift_right(a, start, offset);
+		return true;
+	}
+	return false;
+}
+
+static void shift_left(Darray *a, unsigned int index, unsigned int offset)
 {
 	unsigned int i;
-	for(i = index; i < a->size - 1; i++)
+	for(i = index; i < a->size - offset; i++)
 	{
-		a->array[i] = a->array[i+1];
+		a->array[i] = a->array[i+offset];
 	}
+	a->size -= offset;
+}
+
+bool darray_shift_left(Darray *a, unsigned int index, unsigned int offset)
+{
+	if(a->size > offset && index < a->size)
+	{
+		shift_left(a, index, offset);
+		return true;
+	}
+	return false;
 }
 
 bool darray_replace

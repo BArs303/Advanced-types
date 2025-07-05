@@ -1,5 +1,7 @@
 #include "json.h"
 
+unsigned int tabs_length = 4;
+
 static char* get_key(PData *buffer);
 static JSON* get_value(PData *buffer);
 
@@ -19,7 +21,9 @@ static char* stringify_bool(JSON *a, int level);
 
 static char* process_key(HNode *a, int level);
 static char* l_json_stringify(JSON *a, int level);
+
 static char* add_tabs(int level);
+static void fill_tabs(char *str, unsigned int level);
 
 static void default_json_free(JSON_value data, Types type, void *params);
 
@@ -46,7 +50,6 @@ JSON* json_parse(char *str)
 	if(*(buffer.str) == '{')
 	{
 		result = parse_object(&buffer);
-		result->key = NULL;
 	}
 	return result;
 }
@@ -56,10 +59,11 @@ static JSON* parse_object(PData *buffer)
 	HMap *object;
 	JSON *result, *field;
 	char *key;
+	/*unsigned int i = 0;*/
 
 	object = init_hmap();
 	result = malloc(sizeof(JSON));
-	(*(buffer->str))++; /*skip { symb*/
+	buffer->str++; /*skip { symb*/
 	while(*(buffer->str)) 
 	{
 		if(*(buffer->str) == '}')
@@ -69,9 +73,9 @@ static JSON* parse_object(PData *buffer)
 		else if(*(buffer->str) == '"')
 		{
 			key = get_key(buffer);
+			/*printf("key %s i %u\n", key, i);*/
 			field = get_value(buffer);
 			/*need check field != 0*/
-			field->key = key;
 			hmap_insert(object, key, field);
 		}
 		else if(*(buffer->str) == ',')
@@ -101,7 +105,6 @@ static JSON* parse_list(PData *buffer)
 			buffer->str++;
 		skip_whitespaces(buffer, default_whitespaces);
 		element = coordinator(buffer);
-		element->key = NULL;
 		list_append(array, element);
 	}while(*(buffer->str) == ',');
 
@@ -235,6 +238,15 @@ static JSON* coordinator(PData *buffer)
 	return value;
 }
 
+static void fill_tabs(char *str, unsigned int level)
+{
+	unsigned int i;
+	for(i = 0; i < level * tabs_length; i++)
+	{
+		str[i] = ' ';
+	}
+}
+
 /*Unload JSON data to file*/
 char* json_stringify(JSON *a)
 {
@@ -283,23 +295,32 @@ static char* stringify_object(JSON *a, int level)
 	char *result;
 	List *tmp;
 	HNode *list_element;
+	size_t length;
 	tmp = hmap_to_list(a->value.object);
-	result = malloc(sizeof(char));
-	result = my_concat(result, "\n");
-	result = my_concat(result, add_tabs(level));
-	result = my_concat(result, "{\n");
+	/*printf("hmap to list in stringify json %u\n", tmp->size);*/
+
+	/* \n, tabs, {, \n, null-terminator  */
+	length = 4 + tabs_length * level;
+	result = malloc(sizeof(char) * length);
+
+	result[0] = '\n';
+	fill_tabs(result+1, level);
+	result[tabs_length*level] = '{';
+	result[tabs_length*level+1] = '\n';
+	result[tabs_length*level+1] = 0;
+
 	for(int i = 0; i < tmp->size-1; i++)
 	{
 		result = my_concat(result, add_tabs(level+1));
 
 		list_element = list_at_pos(tmp, i);
 		result = my_concat(result, process_key(list_element, level));
-		
 		result = my_concat(result, l_json_stringify((JSON*)list_element->value, level+1));
 		result = my_concat(result, ",\n");
 	}
 	result = my_concat(result, add_tabs(level+1));
 	list_element = list_at_pos(tmp, tmp->size-1);
+	result = my_concat(result, process_key(list_element, level));
 	result = my_concat(result, l_json_stringify(list_element->value, level+1));
 	result = my_concat(result, "\n");
 	result = my_concat(result, add_tabs(level));
@@ -313,6 +334,7 @@ static char* stringify_list(JSON *a, int level)
 	List *tmp = a->value.list;
 	unsigned int i;
 	result = malloc(sizeof(char));
+	*result = 0;
 	result = my_concat(result, "\n");
 	result = my_concat(result, add_tabs(level));
 	result = my_concat(result, "[\n");
@@ -334,6 +356,8 @@ static char* stringify_int(JSON *a, int level)
 {
 	char *result;
 	result = malloc(sizeof(char));
+	*result = 0;
+	my_concat(result, " ");
 	result = my_concat(result, int_to_str(a->value.number));
 	return result;
 }
@@ -354,6 +378,7 @@ static char* stringify_string(JSON *a, int level)
 	unsigned int i, j, length;
 
 	result = malloc(sizeof(char));
+	result[0] = 0;
 	result = my_concat(result, " \"");
 
 	for(i = 0, length = 0; a->value.string[i]; i++, length++)
@@ -422,7 +447,6 @@ void delete_json(void *element, void *params)
 	if(a)
 	{
 		default_json_free(a->value, a->type, params);
-		free(a->key);
 		free(a);
 	}
 }
