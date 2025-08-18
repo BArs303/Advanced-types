@@ -16,6 +16,7 @@ char* file_to_str(const char *filename);
 char* int_to_str(unsigned int num);
 unsigned int word_counter(char *str, char separator);
 char** mysplit(char *str, char separator, unsigned int *return_size);
+void print_buffer(void *buffer, size_t size);
 
 
 #endif

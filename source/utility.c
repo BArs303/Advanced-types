@@ -128,3 +128,14 @@ char** mysplit(char *str, char separator, unsigned int *size)
 	}
 	return result;
 }
+
+void print_buffer(void *buffer, size_t size)
+{
+	size_t i;
+	char *value;
+	value = buffer;
+	for(i = 0; i < size; i++)
+	{
+		printf("byte %zu value %hhu hex value %hhX\n", i, value[i], value[i]);
+	}
+}
