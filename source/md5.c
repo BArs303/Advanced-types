@@ -1,5 +1,8 @@
 #include "md5.h"
 
+
+#define MD5BufferSize 64
+
 #define S11 7
 #define S12 12
 #define S13 17
@@ -51,43 +54,81 @@
 (a) = ROTATE_LEFT((a), (s)); \
 (a) += (b);
 
-
-const unsigned int md5_initials[4] = 
-{
-    0x67452301,
-    0xEFCDAB89,
-    0x98BADCFE,
-    0x10325476
-};
-
+static void MD5Transform(unsigned int state[4], unsigned int x[16]);
+static MD5_CTX* MD5Init(size_t length);
 
 void foo(char *str, size_t length)
 {
-    unsigned int a0,b0,c0,d0, a, b, c, d;
-    unsigned char buffer[64];
+    MD5_CTX *ctx;
+    unsigned char buffer[MD5BufferSize];
     unsigned int *x;
+    unsigned int remainder;
     
+    ctx = MD5Init(length);
 
-    /* copy next 64 bytes to buffer. Hash them. Repeat */
-    memset(buffer, 0, 64);
-    buffer[0] = 'a';
-    buffer[1] = 0x80;
+    for(size_t i = 0; i < length / MD5BufferSize; i += MD5BufferSize)
+    {
+        memcpy(buffer, str + i, MD5BufferSize);
+        MD5Transform(ctx->state, buffer);
+    }
+
+    memset(buffer, 0, MD5BufferSize);
+    remainder = length % MD5BufferSize;
+    memcpy(buffer, str, remainder);
+    buffer[remainder] = 0x80;
+
+    if(remainder >= 56)
+    {
+        MD5Transform(ctx->state, buffer);
+        memset(buffer, 0, MD5BufferSize);
+    }
+
     x = buffer;
+    x[14] = ctx->bits_num[0];
+    x[15] = ctx->bits_num[1];
+    MD5Transform(ctx->state, x);
 
-    a0 = md5_initials[0];
-    b0 = md5_initials[1];
-    c0 = md5_initials[2];
-    d0 = md5_initials[3];
+    char *result;
+    result = ctx->state;
+    for(int i = 0; i < 16; i++)
+    {
+        printf("%hhX", result[i]);
+    }
+    printf("\n");
 
-    x[14] = 8;
-    
-    a = a0;
-    b = b0;
-    c = c0;
-    d = d0;
+}
+
+static MD5_CTX* MD5Init(size_t length)
+{
+    MD5_CTX *result;
+    result = malloc(sizeof(MD5_CTX));
+    /* MD5 initial values */
+    result->state[0] = 0x67452301;
+    result->state[1] = 0xEFCDAB89;
+    result->state[2] = 0x98BADCFE;
+    result->state[3] = 0x10325476;
+    /* 
+     * Convert bytes to bits 
+     * MD5 uses only last 64 bits from the actual number of bits
+     * They are stored as two 4 bytes words 
+     */
+    result->bits_num[0] = (length & 0xFFFFFFFF) << 3;
+    result->bits_num[1] = (length >> 29 & 0xFFFFFFFF);
+    return result;
+}
+
+static void MD5Transform(unsigned int state[4], unsigned int x[16])
+{
+    unsigned int a, b, c, d;
+
+    a = state[0];
+    b = state[1];
+    c = state[2];
+    d = state[3];
+    printf("a %X\nb %X\nc %X\nd %X\n", a, b, c, d);
 
     /* 
-        Last values calculated as integer part of abs(sin(i)) * (1<<32)
+        Last values in each function calculated as integer part of abs(sin(i)) * (1<<31)
         where i in radians [1, 64]
      */
 
@@ -175,37 +216,8 @@ void foo(char *str, size_t length)
     II(c, d, a, b, x[ 2], S43, 0x2AD7D2BB)
     II(b, c, d, a, x[ 9], S44, 0xEB86D391)
 
-    a0 += a;
-    b0 += b;
-    c0 += c;
-    d0 += d;
-
-    char *result;
-    result = &a0;
-    for(int i = 0; i < 4; i++)
-    {
-        printf("%hhX", result[i]);
-    }
-
-    result = &b0;
-    for(int i = 0; i < 4; i++)
-    {
-        printf("%hhX", result[i]);
-    }
-
-    result = &c0;
-    for(int i = 0; i < 4; i++)
-    {
-        printf("%hhX", result[i]);
-    }
-
-    result = &d0;
-    for(int i = 0; i < 4; i++)
-    {
-        printf("%hhX", result[i]);
-    }
-
-
-    printf("\nmd5 hash %X %X %X %X\n", a0, b0, c0, d0);
-
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
 }

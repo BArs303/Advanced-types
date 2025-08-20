@@ -10,8 +10,6 @@ TARGET_EXEC = main.elf
 
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 
-#SRC_NAMES = $(notdir $(SOURCES))
-
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 H_FLAGS = $(foreach DIR, $(HEADERS_DIRS), -I $(DIR))
 
@@ -29,7 +27,7 @@ H_FLAGS = $(foreach DIR, $(HEADERS_DIRS), -I $(DIR))
 #$^ means a list of all dependency names
 
 $(TARGET_EXEC):$(OBJECTS)
-	$(CC) -o $@ $^
+	$(CC) -lm -o $@ $^
 
 test:
 	@echo $(SOURCES)
