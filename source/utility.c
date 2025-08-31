@@ -1,5 +1,4 @@
 #include "utility.h"
-
 void ptr_swap(void *arg1, void *arg2)
 {
 	void *tmp;
@@ -138,4 +137,19 @@ void print_buffer(void *buffer, size_t size)
 	{
 		printf("byte %zu value %hhu hex value %hhX\n", i, value[i], value[i]);
 	}
+}
+
+bool is_prime(int number)
+{
+    int i;
+    if(number == 1 || number == 0)
+        return true;
+    for(i = 2; i <= number / 2; i++)
+    {
+        if(number % i == 0)
+        {
+            return false;
+        }
+    }
+    return true;
 }

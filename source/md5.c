@@ -65,11 +65,12 @@ void foo(char *str, size_t length)
     unsigned int remainder;
     
     ctx = MD5Init(length);
+    x = (unsigned int*)buffer;
 
     for(size_t i = 0; i < length / MD5BufferSize; i += MD5BufferSize)
     {
         memcpy(buffer, str + i, MD5BufferSize);
-        MD5Transform(ctx->state, buffer);
+        MD5Transform(ctx->state, x);
     }
 
     memset(buffer, 0, MD5BufferSize);
@@ -79,17 +80,16 @@ void foo(char *str, size_t length)
 
     if(remainder >= 56)
     {
-        MD5Transform(ctx->state, buffer);
+        MD5Transform(ctx->state, x);
         memset(buffer, 0, MD5BufferSize);
     }
 
-    x = buffer;
     x[14] = ctx->bits_num[0];
     x[15] = ctx->bits_num[1];
     MD5Transform(ctx->state, x);
 
     char *result;
-    result = ctx->state;
+    result = (char*)ctx->state;
     for(int i = 0; i < 16; i++)
     {
         printf("%hhX", result[i]);
@@ -125,7 +125,6 @@ static void MD5Transform(unsigned int state[4], unsigned int x[16])
     b = state[1];
     c = state[2];
     d = state[3];
-    printf("a %X\nb %X\nc %X\nd %X\n", a, b, c, d);
 
     /* 
         Last values in each function calculated as integer part of abs(sin(i)) * (1<<31)
