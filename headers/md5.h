@@ -10,6 +10,6 @@ struct _md5_ctx
     unsigned int bits_num[2];
 };
 
-void foo(char *input, size_t size);
+void MD_Hash(char *input, size_t size);
 #endif
 

@@ -1,4 +1,9 @@
 #include "utility.h"
+#include <stdlib.h>
+#include <string.h>
+
+static unsigned int word_counter(char *str, char *delims);
+
 void ptr_swap(void *arg1, void *arg2)
 {
 	void *tmp;
@@ -72,37 +77,9 @@ char* int_to_str(unsigned int num)
 	return str;
 }
 
-unsigned int word_counter(char *str, char separator)
-{
-	/*prev - is previous char whitespace*/
-	bool wsp, prev;
-	size_t i;
-	unsigned int n;
-	/*how it works?*/
-	prev = false;
-	for(i = 0, n = 0; str[i]; i++)
-	{
-		wsp = str[i] == separator;
-		if(wsp)
-		{
-			if(prev)
-			{
-				n++;
-				prev = false;
-			}
-		}
-		else
-		{
-			prev = true;
-		}
-	}
-	if(prev)
-		n++;
-	return n;
-}
-
 char** mysplit(char *str, char separator, unsigned int *size)
 {
+    /*
 	char **result;
 	char separator_str[2];
 	size_t word_length, i;
@@ -125,7 +102,8 @@ char** mysplit(char *str, char separator, unsigned int *size)
 			j++;
 		}
 	}
-	return result;
+	return result;*/
+    return NULL;
 }
 
 void print_buffer(void *buffer, size_t size)
@@ -153,3 +131,96 @@ bool is_prime(int number)
     }
     return true;
 }
+
+
+char* str_duplicate(char *restrict str)
+{
+    char *result;
+    size_t n;
+    n = strlen(str) + 1;
+    result = malloc(sizeof(char) * n);
+    return strcpy(result, str);
+}
+
+static unsigned int word_counter(char *str, char *delims)
+{
+    /* is previous char a word char */
+    bool prev;
+    size_t i;
+    unsigned int c;
+    prev = false;
+    for(i = 0, c = 0; str[i]; i++)
+    {
+        if(is_whitespace(str[i], delims) && prev)
+        {
+            c++;
+            prev = false;
+        }
+        else if(is_whitespace(str[i], delims))
+        {
+            continue;
+        }
+        else
+        {
+            prev = true;
+        }
+    }
+    return prev?c+1:c;
+}
+
+char** str_split(char *str, char *delims, unsigned int *size)
+{
+    unsigned int n, k;
+    char *token, *str_copy;
+    char **result;
+
+    str_copy = str_duplicate(str);
+    token = strtok(str_copy, delims);
+    k = word_counter(str, delims);
+
+    result = malloc(sizeof(char*) * k);
+    *size = k;
+
+    for(n = 0; token; n++)
+    {
+        if(n > k)
+        {
+            perror("word counter error\n");
+            exit(EXIT_FAILURE);
+        }
+        result[n] = token;
+        token = strtok(NULL, delims);
+    }
+    return result;
+}
+
+/* Old version 13.09.2025
+ * unsigned int word_counter(char *str, char separator)
+{
+	//prev - is previous char whitespace*
+	bool wsp, prev;
+	size_t i;
+	unsigned int n;
+
+	prev = false;
+	for(i = 0, n = 0; str[i]; i++)
+	{
+		wsp = str[i] == separator;
+		if(wsp)
+		{
+			if(prev)
+			{
+				n++;
+				prev = false;
+			}
+		}
+		else
+		{
+			prev = true;
+		}
+	}
+	if(prev)
+		n++;
+	return n;
+}*/
+

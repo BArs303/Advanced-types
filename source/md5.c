@@ -57,7 +57,7 @@
 static void MD5Transform(unsigned int state[4], unsigned int x[16]);
 static MD5_CTX* MD5Init(size_t length);
 
-void foo(char *str, size_t length)
+void MD5_Hash(char *str, size_t length)
 {
     MD5_CTX *ctx;
     unsigned char buffer[MD5BufferSize];
